@@ -4,6 +4,8 @@
 .claude/
 docs/
 backend/reports/
+AGENTS.md
+skills/
 
 # Dependencies
 node_modules/
