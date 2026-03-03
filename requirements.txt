@@ -2,10 +2,6 @@
 # AI Event Agent — Backend Dependencies
 # ============================================
 
-# Agent Framework
-crewai>=0.80.0
-crewai-tools>=0.12.0
-
 # LLM Integration
 langchain>=0.3.0
 langchain-openai>=0.2.0
@@ -15,7 +11,7 @@ openai>=1.0.0
 crawl4ai>=0.4.0
 
 # Search
-duckduckgo-search>=6.0.0
+ddgs>=0.3.0
 
 # Backend
 fastapi>=0.115.0
