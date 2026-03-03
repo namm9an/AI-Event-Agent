@@ -86,6 +86,7 @@ APP_TIMEZONE = os.getenv("APP_TIMEZONE", "Asia/Kolkata")
 DEFAULT_SCRAPE_TIME = os.getenv("DEFAULT_SCRAPE_TIME", "00:00")
 DEFAULT_REPORT_TIME = os.getenv("DEFAULT_REPORT_TIME", "12:00")
 REPORTS_DIR = os.getenv("REPORTS_DIR", "./reports")
+REPORT_FONT_PATH = os.getenv("REPORT_FONT_PATH", "")
 
 
 # ============================================
