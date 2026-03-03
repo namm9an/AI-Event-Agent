@@ -3,14 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --bg-start: #081225;
-  --bg-end: #13274a;
-  --card: rgba(13, 30, 56, 0.78);
-  --line: rgba(255, 255, 255, 0.12);
-  --text-main: #f3eadc;
-  --text-soft: #a8b5ca;
-  --accent: #19d3ff;
-  --accent-2: #53f6c4;
+  --font-heading: "Space Grotesk", "Avenir Next", "Gill Sans", "Trebuchet MS", sans-serif;
+  --font-body: "Manrope", "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+  --bg-start: #09162d;
+  --bg-mid: #0e2550;
+  --bg-end: #0f3e55;
+  --surface-1: rgba(6, 21, 47, 0.76);
+  --surface-2: rgba(8, 31, 68, 0.82);
+  --line: rgba(255, 255, 255, 0.14);
+  --text-main: #f2f7ff;
+  --text-soft: #b7c7df;
+  --accent: #32d6ff;
+  --accent-2: #7df3cf;
+  --danger: #ff7d93;
 }
 
 * {
@@ -23,10 +28,11 @@ body {
   padding: 0;
   min-height: 100%;
   color: var(--text-main);
-  background: radial-gradient(circle at 18% 10%, #174389 0%, transparent 30%),
-    radial-gradient(circle at 88% 20%, #1f6d6d 0%, transparent 34%),
-    linear-gradient(140deg, var(--bg-start), var(--bg-end));
-  font-family: "Sora", "Space Grotesk", system-ui, -apple-system, sans-serif;
+  background: radial-gradient(circle at 8% 2%, #1a57a6 0%, transparent 36%),
+    radial-gradient(circle at 96% 8%, #1d8587 0%, transparent 30%),
+    radial-gradient(circle at 50% 110%, #18506e 0%, transparent 44%),
+    linear-gradient(148deg, var(--bg-start), var(--bg-mid), var(--bg-end));
+  font-family: var(--font-body), "Inter", system-ui, -apple-system, sans-serif;
 }
 
 a {
@@ -39,7 +45,7 @@ a {
 }
 
 .frost {
-  background: var(--card);
+  background: var(--surface-1);
   border: 1px solid var(--line);
   backdrop-filter: blur(14px);
 }
@@ -47,4 +53,90 @@ a {
 .section-title {
   letter-spacing: 0.02em;
   font-weight: 700;
+}
+
+.home-stage {
+  position: relative;
+  overflow: hidden;
+}
+
+.home-stage::before {
+  content: "";
+  position: absolute;
+  inset: -120px -40px auto;
+  height: 280px;
+  background: linear-gradient(90deg, rgba(50, 214, 255, 0.1), rgba(125, 243, 207, 0.14));
+  filter: blur(26px);
+  pointer-events: none;
+}
+
+.hero-card {
+  background: linear-gradient(142deg, var(--surface-1), var(--surface-2));
+  border: 1px solid var(--line);
+  box-shadow: 0 26px 70px rgba(3, 12, 32, 0.45);
+}
+
+.heading-display {
+  font-family: var(--font-heading), "Space Grotesk", sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.chip {
+  border: 1px solid rgba(50, 214, 255, 0.38);
+  color: var(--accent);
+  background: rgba(7, 29, 63, 0.45);
+}
+
+.metric-card {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(8, 29, 62, 0.5);
+}
+
+.panel {
+  border: 1px solid var(--line);
+  background: linear-gradient(140deg, rgba(7, 25, 56, 0.76), rgba(8, 36, 78, 0.82));
+  backdrop-filter: blur(10px);
+  box-shadow: 0 18px 40px rgba(3, 12, 32, 0.28);
+}
+
+.panel-title {
+  font-family: var(--font-heading), sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  color: var(--accent);
+}
+
+.btn-primary {
+  background: linear-gradient(130deg, var(--accent), #63e4ff);
+  color: #04162d;
+}
+
+.btn-secondary {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.btn-danger {
+  background: linear-gradient(120deg, #ff8aa2, var(--danger));
+  color: #1f0b12;
+}
+
+.input-shell {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(2, 14, 34, 0.46);
+}
+
+.table-shell thead tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  color: #d6e2f2;
+}
+
+.table-shell tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.table-shell tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04);
 }
