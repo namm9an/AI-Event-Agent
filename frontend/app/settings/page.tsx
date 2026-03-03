@@ -35,9 +35,13 @@ export default function SettingsPage() {
 
   return (
     <ProtectedShell requireRole="super_admin">
-      <main className="mx-auto max-w-6xl px-4 py-6">
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
         <TopBar />
         <div className="space-y-5">
+          <section>
+            <p className="panel-title">Control Room</p>
+            <h2 className="heading-display mt-1 text-3xl">Super Admin Configuration</h2>
+          </section>
           <AdminActionsPanel token={token} />
           <AdminSchedulePanel token={token} schedule={schedule} onRefresh={refresh} />
           <AdminQueryManager token={token} queries={queries} onRefresh={refresh} />

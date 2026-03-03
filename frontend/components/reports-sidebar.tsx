@@ -11,8 +11,8 @@ interface ReportsSidebarProps {
 
 export default function ReportsSidebar({ reports, activeReportId, onSelect, onDownload }: ReportsSidebarProps) {
   return (
-    <aside className="frost rounded-2xl p-4">
-      <h2 className="section-title text-sm uppercase tracking-[0.2em] text-cyan">Daily Reports</h2>
+    <aside className="panel rounded-2xl p-4">
+      <h2 className="panel-title">Daily Reports</h2>
       <div className="mt-4 max-h-[420px] space-y-2 overflow-y-auto pr-1">
         {reports.length === 0 ? (
           <p className="text-sm text-slate-300/80">No reports yet.</p>
@@ -21,7 +21,9 @@ export default function ReportsSidebar({ reports, activeReportId, onSelect, onDo
             <div
               key={report.id}
               className={`rounded-xl border p-3 ${
-                activeReportId === report.id ? "border-cyan bg-cyan/10" : "border-white/15 bg-white/5"
+                activeReportId === report.id
+                  ? "border-cyan bg-cyan/10 shadow-lg shadow-cyan/10"
+                  : "border-white/15 bg-white/5"
               }`}
             >
               <button type="button" className="w-full text-left" onClick={() => onSelect(report.id)}>

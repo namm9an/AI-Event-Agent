@@ -45,8 +45,12 @@ export default function DashboardPage() {
 
   return (
     <ProtectedShell>
-      <main className="mx-auto max-w-7xl px-4 py-6">
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         <TopBar />
+        <section className="mb-4">
+          <p className="panel-title">Mission Feed</p>
+          <h2 className="heading-display mt-1 text-3xl">Daily Event Intelligence</h2>
+        </section>
 
         <StatusOverview events={events.length} speakers={events.reduce((n, e) => n + (e.speakers?.length ?? 0), 0)} reports={reports.length} />
 

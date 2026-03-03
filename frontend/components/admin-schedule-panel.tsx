@@ -33,13 +33,13 @@ export default function AdminSchedulePanel({ token, schedule, onRefresh }: Admin
   }
 
   return (
-    <section className="frost rounded-2xl p-4">
-      <h2 className="section-title text-sm uppercase tracking-[0.2em] text-cyan">Scheduler</h2>
+    <section className="panel rounded-2xl p-4">
+      <h2 className="panel-title">Scheduler</h2>
       <form className="mt-4 grid gap-3 md:grid-cols-3" onSubmit={onSubmit}>
         <label className="text-xs text-slate-300/90">
           Timezone
           <input
-            className="mt-1 w-full rounded-lg border border-white/20 bg-black/25 px-3 py-2 text-sm"
+            className="input-shell mt-1 w-full rounded-lg px-3 py-2 text-sm"
             value={timezone}
             onChange={(e) => setTimezone(e.target.value)}
           />
@@ -47,7 +47,7 @@ export default function AdminSchedulePanel({ token, schedule, onRefresh }: Admin
         <label className="text-xs text-slate-300/90">
           Scrape Time
           <input
-            className="mt-1 w-full rounded-lg border border-white/20 bg-black/25 px-3 py-2 text-sm"
+            className="input-shell mt-1 w-full rounded-lg px-3 py-2 text-sm"
             type="time"
             value={scrapeTime}
             onChange={(e) => setScrapeTime(e.target.value)}
@@ -56,13 +56,13 @@ export default function AdminSchedulePanel({ token, schedule, onRefresh }: Admin
         <label className="text-xs text-slate-300/90">
           Report Time
           <input
-            className="mt-1 w-full rounded-lg border border-white/20 bg-black/25 px-3 py-2 text-sm"
+            className="input-shell mt-1 w-full rounded-lg px-3 py-2 text-sm"
             type="time"
             value={reportTime}
             onChange={(e) => setReportTime(e.target.value)}
           />
         </label>
-        <button className="rounded-xl bg-mint px-4 py-2 text-sm font-semibold text-ink md:col-span-3" disabled={saving}>
+        <button className="btn-primary rounded-xl px-4 py-2 text-sm font-semibold md:col-span-3" disabled={saving}>
           {saving ? "Saving..." : "Save schedule"}
         </button>
       </form>
