@@ -7,7 +7,7 @@ from pathlib import Path
 
 from sqlalchemy.orm import Session, joinedload
 
-from config import REPORTS_DIR, logger
+from config import REPORTS_DIR, REPORT_FONT_PATH, logger
 from db.models import Event, Report
 
 
@@ -69,9 +69,8 @@ def _build_report_text(events: list[Event], summary: dict) -> str:
 
 
 def _find_unicode_font() -> Path | None:
-    env_path = os.getenv("REPORT_FONT_PATH")
     candidates = [
-        env_path,
+        REPORT_FONT_PATH,
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
         "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
         "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
