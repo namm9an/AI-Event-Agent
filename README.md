@@ -1,139 +1,293 @@
-# AI Event Agent (2026)
+# AI Event Agent
 
-Production-oriented event intelligence platform for AI/ML/Cloud/GPU topics.
+Scout-grade event intelligence for E2E Networks' marketing and events team. Automatically discovers AI/ML/Cloud/GPU events across India, identifies speakers with enriched metadata, generates daily PDF reports, and serves everything through a role-based dashboard.
 
-## What this project does
-- Runs a scheduled web intelligence pipeline for India-focused tech events.
-- Extracts events, speakers, topics, and source links using Nemotron (OpenAI-compatible vLLM endpoint).
-- Enriches speakers with best-effort public web metadata:
-  - LinkedIn URL and public bio snippet
-  - Wikipedia URL (if found)
-  - previous-talk references (if found)
-- Generates a shared daily PDF report.
-- Serves a role-based API for dashboard + admin controls.
+---
 
-## Runtime model
-- Primary model: `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16`
-- Endpoint style: OpenAI-compatible REST (`/v1/...`)
-- Current endpoint convention:
-  - `LLM_INFERENCE_URL=http://101.53.140.68:8000/v1`
+## What it does
 
-## Roles and auth
-- `user`: read events/speakers/reports + chat
-- `super_admin`: user capabilities + query CRUD + schedule edits + manual run actions
-- Auth: JWT (`HS256`) with 24-hour session
+- **Scrapes** AI/ML/Cloud events daily via DuckDuckGo + Crawl4AI (no browser required)
+- **Enriches** each event with speaker details: LinkedIn, Wikipedia, topic links, previous talks
+- **Generates** a daily PDF report at 12:00 IST, downloadable from the dashboard
+- **Serves** a REST API with JWT auth — read-only users and super admins
+- **Runs** a modern Next.js dashboard with event table, speaker details, report downloads, and a chat assistant
 
-## API surface (v2)
-### Auth
-- `POST /api/auth/login`
-- `GET /api/auth/me`
+---
 
-### User
-- `GET /api/status`
-- `GET /api/events`
-- `GET /api/events/{id}`
-- `GET /api/speakers`
-- `GET /api/reports`
-- `GET /api/reports/{report_id}/download`
-- `POST /api/chat` (supports optional `report_id` context)
+## Architecture
 
-### Super admin
-- `GET /api/admin/queries`
-- `POST /api/admin/queries`
-- `PUT /api/admin/queries/{query_id}`
-- `DELETE /api/admin/queries/{query_id}`
-- `GET /api/admin/schedule`
-- `PUT /api/admin/schedule`
-- `POST /api/admin/run-now`
-- `POST /api/admin/reports/generate-now`
-
-## Scheduling defaults
-- Timezone: `Asia/Kolkata`
-- Daily scrape: `00:00`
-- Daily report generation: `12:00`
-
-Schedule is persisted in DB and can be edited by super admin APIs.
-
-## Tech stack
-- FastAPI + SQLAlchemy + SQLite
-- CrewAI orchestration + deterministic scrape layer
-- DuckDuckGo search + Crawl4AI scraping
-- APScheduler for in-app scheduling
-- PyJWT for auth
-- fpdf2/PyMuPDF fallback for PDF generation
-
-## Project layout
-```text
-.
-├── main.py
-├── auth.py
-├── config.py
-├── crew.py
-├── scraper.py
-├── requirements.txt
-├── agents/
-├── db/
-├── services/
-├── tools/
-└── backend/                # local runtime artifacts (ignored)
-    ├── .env
-    ├── events.db
-    ├── reports/
-    └── venv/
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Daily Pipeline (00:00 IST)               │
+│                                                                  │
+│  DuckDuckGo Search → Crawl4AI Scrape → Direct LLM Calls        │
+│       (Python)             (Python)        (Nemotron 30B)       │
+│                                                                  │
+│  Step 1: Enrichment  — extract event metadata from raw markdown │
+│  Step 2: Speakers    — identify speakers + LinkedIn/Wikipedia    │
+│  Step 3: Formatter   — validate, deduplicate, normalize JSON     │
+│                                    │                             │
+│                              SQLite DB                           │
+└─────────────────────────────────────────────────────────────────┘
+                                    │
+                     ┌──────────────┴──────────────┐
+                     │       FastAPI (port 8010)    │
+                     │       JWT Auth (HS256)        │
+                     └──────────────┬──────────────┘
+                                    │
+                     ┌──────────────┴──────────────┐
+                     │    Next.js Dashboard (3010)  │
+                     │    Reports · Chat · Admin    │
+                     └─────────────────────────────┘
 ```
 
-## Environment variables
-Create runtime `.env` (kept local/ignored):
+**LLM**: `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16` served via vLLM on A100 80GB
+**Key design choice**: Direct `ChatOpenAI` calls instead of CrewAI ReAct loops — avoids parsing failures from Nemotron's `<think>...</think>` output format.
+
+---
+
+## Tech Stack
+
+| Layer | Tech |
+|-------|------|
+| Backend | FastAPI + SQLAlchemy + SQLite |
+| LLM | Nemotron 30B via OpenAI-compatible vLLM endpoint |
+| Scraping | DuckDuckGo (`ddgs`) + Crawl4AI |
+| Scheduling | APScheduler (in-process cron) |
+| Auth | PyJWT (HS256, 24h sessions) |
+| Reports | fpdf2 (PyMuPDF fallback) |
+| Frontend | Next.js 14 + Tailwind CSS |
+
+---
+
+## Project Structure
+
+```
+.
+├── main.py              # FastAPI server — all API endpoints
+├── auth.py              # JWT auth, role guards
+├── config.py            # Env config, LLM client factory
+├── crew.py              # Hybrid pipeline: scrape → LLM → DB
+├── scraper.py           # DuckDuckGo search + Crawl4AI scrape
+├── requirements.txt
+├── db/
+│   ├── database.py      # Engine, session, migrations, seeding
+│   └── models.py        # Event, Speaker, ScrapeRun, SearchQuery, Report, AppSetting
+├── services/
+│   ├── report_service.py     # PDF generation
+│   ├── scheduler_service.py  # APScheduler wrapper
+│   └── settings_service.py   # DB-backed key-value settings
+├── frontend/            # Next.js 14 dashboard
+│   ├── app/
+│   ├── components/
+│   └── lib/
+└── reports/             # Generated daily PDFs (runtime)
+```
+
+---
+
+## Quickstart (Local)
+
+### Prerequisites
+
+- Python 3.11+
+- Node.js 18+
+- vLLM endpoint running Nemotron (or any OpenAI-compatible model)
+
+### Backend
+
+```bash
+# 1. Clone and enter project
+git clone https://github.com/namm9an/AI-Event-Agent
+cd AI-Event-Agent
+
+# 2. Create virtualenv and install
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# 3. Copy and fill env
+cp .env.example .env
+# Edit .env — set LLM_INFERENCE_URL, JWT_SECRET at minimum
+
+# 4. Start backend
+uvicorn main:app --host 0.0.0.0 --port 8010 --reload
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+cp .env.example .env.local
+npm run dev   # starts on port 3010
+```
+
+Open `http://localhost:3010` — login with `user / user` (read-only) or `super_admin / super_admin` (admin).
+
+---
+
+## Environment Variables
+
+Create a `.env` file in the project root:
 
 ```env
+# LLM endpoint (OpenAI-compatible)
 LLM_INFERENCE_URL=http://101.53.140.68:8000/v1
 LLM_API_KEY=none
 LLM_MODEL=nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16
 
+# Database
 DATABASE_URL=sqlite:///./events.db
 
-JWT_SECRET=replace-with-strong-random-secret
+# Auth — change JWT_SECRET in production
+JWT_SECRET=replace-with-a-strong-random-secret
 JWT_EXPIRE_HOURS=24
 NORMAL_USER_USERNAME=user
 NORMAL_USER_PASSWORD=user
 SUPER_ADMIN_USERNAME=super_admin
 SUPER_ADMIN_PASSWORD=super_admin
 
+# Scheduler
 APP_TIMEZONE=Asia/Kolkata
 DEFAULT_SCRAPE_TIME=00:00
 DEFAULT_REPORT_TIME=12:00
 REPORTS_DIR=./reports
 
-MAX_TOKENS_PER_PAGE=8000
+# Scraping
+MAX_TOKENS_PER_PAGE=6000
 DDGS_RETRY_COUNT=3
 DDGS_BASE_DELAY=2
 MAX_SPEAKERS_PER_EVENT=5
-SPEAKER_SEARCH_TIMEOUT=10
 
+# Logging
 LOG_LEVEL=INFO
 ```
 
-## Local run
-From project root (use your venv python):
+Create `frontend/.env.local`:
 
-```bash
-uvicorn main:app --host 0.0.0.0 --port 8010 --reload
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8010
 ```
 
-## VM run (tmux)
-Recommended split:
-- backend API: `8010`
-- frontend: `3010`
-- model server: `8000`
+---
 
-### Inbound rules guidance
-- Open `3010` if frontend is directly exposed.
-- Open `8010` only if direct API access is needed externally.
-- If using reverse proxy (recommended), keep backend private and expose only domain ports.
+## API Reference
 
-## Domain target
-Planned public domain: `scout.docustory.in`.
+### Auth
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/api/auth/login` | — | Get JWT token |
+| GET | `/api/auth/me` | User | Token info |
+
+**Login request:**
+```json
+{ "username": "user", "password": "user" }
+```
+
+### User Endpoints (any authenticated user)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/status` | Server status, last run metrics |
+| GET | `/api/events` | List events (filter by status, city, category, search) |
+| GET | `/api/events/{id}` | Single event with speakers |
+| GET | `/api/speakers` | List all speakers |
+| GET | `/api/reports` | List generated reports |
+| GET | `/api/reports/{id}/download` | Download PDF report |
+| POST | `/api/chat` | Chat with event assistant (supports `report_id` context) |
+
+### Admin Endpoints (super_admin only)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/admin/queries` | List search queries |
+| POST | `/api/admin/queries` | Add search query |
+| PUT | `/api/admin/queries/{id}` | Update query |
+| DELETE | `/api/admin/queries/{id}` | Delete query |
+| GET | `/api/admin/schedule` | Get current schedule |
+| PUT | `/api/admin/schedule` | Update scrape/report times |
+| POST | `/api/admin/run-now` | Trigger scrape immediately |
+| POST | `/api/admin/reports/generate-now` | Trigger report immediately |
+
+---
+
+## Dashboard Features
+
+| Page | Role | Features |
+|------|------|---------|
+| `/` | Public | Landing + auto-redirect if logged in |
+| `/login` | Public | JWT login form |
+| `/dashboard` | User | Events table, speaker details, report sidebar, chat |
+| `/settings` | super_admin | Query manager, schedule editor, manual run buttons |
+
+---
+
+## Scheduling
+
+Schedules are persisted in the DB and editable via the admin API:
+
+| Job | Default (IST) | Description |
+|-----|--------------|-------------|
+| Scrape | 00:00 | Full pipeline — search, scrape, extract |
+| Report | 12:00 | Generate PDF from today's events |
+
+Changes take effect immediately without restart.
+
+---
+
+## Roles
+
+| Role | Credentials | Access |
+|------|------------|--------|
+| `user` | `user / user` | Events, speakers, reports, chat |
+| `super_admin` | `super_admin / super_admin` | Everything + query/schedule/run management |
+
+---
+
+## VM Deployment (scout.docustory.in)
+
+```bash
+# SSH into VM
+ssh root@205.147.102.105
+
+# Pull latest
+cd /path/to/AI-Event-Agent
+git pull origin main
+
+# Restart backend in tmux
+tmux new-session -d -s backend "source venv/bin/activate && uvicorn main:app --host 0.0.0.0 --port 8010"
+
+# Restart frontend in tmux
+tmux new-session -d -s frontend "cd frontend && npm run build && npm start -- -p 3010"
+
+# Model server already running on port 8000 (Nemotron via vLLM)
+```
+
+**NGINX config** — proxy `scout.docustory.in` → `localhost:3010`, `/api/*` → `localhost:8010`.
+
+---
+
+## Data Model
+
+### Event
+`id, name, description, date_text, location, city, status, category[], url, organizer, event_type, registration_url, image_url, scraped_at, last_scraped_at`
+
+### Speaker
+`id, event_id, name, designation, company, talk_title, talk_summary, linkedin_url, linkedin_bio, topic_links[], topic_category, previous_talks[], wikipedia_url`
+
+### Report
+`id, report_date, file_name, file_path, status, summary_json, raw_text, created_at`
+
+### SearchQuery (admin-editable)
+`id, query, topic, is_active, priority, created_at`
+
+---
 
 ## Notes
-- This repo intentionally ignores local secrets/runtime artifacts (`.env`, DB, reports, venv).
-- `docs/` and `.claude/` are local-only by current workflow preferences.
+
+- `.env`, `events.db`, `reports/`, and `venv/` are gitignored — never commit secrets
+- The pipeline uses direct LLM calls (not CrewAI ReAct) to handle Nemotron's thinking-token output
+- Speaker enrichment is best-effort — never fabricates data, uses empty strings for missing fields
+- Duplicate detection uses exact URL match + fuzzy name+date matching (85% threshold)
