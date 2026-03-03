@@ -7,7 +7,7 @@ from pathlib import Path
 
 from sqlalchemy.orm import Session, joinedload
 
-from config import REPORTS_DIR
+from config import REPORTS_DIR, logger
 from db.models import Event, Report
 
 
@@ -68,20 +68,54 @@ def _build_report_text(events: list[Event], summary: dict) -> str:
     return "\n".join(lines)
 
 
+def _find_unicode_font() -> Path | None:
+    env_path = os.getenv("REPORT_FONT_PATH")
+    candidates = [
+        env_path,
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+        "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+    ]
+    for candidate in candidates:
+        if not candidate:
+            continue
+        path = Path(candidate)
+        if path.exists():
+            return path
+    return None
+
+
+def _contains_non_latin1(text: str) -> bool:
+    return any(ord(ch) > 255 for ch in text)
+
+
 def _render_pdf(text: str, output_path: Path) -> None:
+    unicode_font_path = _find_unicode_font()
+
     try:
         from fpdf import FPDF
+
         pdf = FPDF()
         pdf.set_auto_page_break(auto=True, margin=15)
         pdf.add_page()
-        pdf.set_font("Helvetica", size=11)
+        if unicode_font_path:
+            pdf.add_font("Unicode", "", str(unicode_font_path))
+            pdf.set_font("Unicode", size=11)
+        else:
+            pdf.set_font("Helvetica", size=11)
+            if _contains_non_latin1(text):
+                raise RuntimeError(
+                    "Unicode font not found for fpdf2; falling back to PyMuPDF renderer"
+                )
+
         for line in text.splitlines():
-            safe = line.encode("latin-1", "replace").decode("latin-1")
-            pdf.multi_cell(0, 6, safe)
+            pdf.multi_cell(0, 6, line)
         pdf.output(str(output_path))
         return
-    except Exception:
-        # Fallback: use PyMuPDF when fpdf2 is not installed.
+    except Exception as exc:
+        logger.warning("FPDF rendering failed (%s). Trying PyMuPDF fallback.", exc)
+
+    try:
         import fitz
 
         doc = fitz.open()
@@ -95,6 +129,8 @@ def _render_pdf(text: str, output_path: Path) -> None:
             y += 14
         doc.save(str(output_path))
         doc.close()
+    except Exception as exc:
+        raise RuntimeError(f"PDF generation failed for {output_path}: {exc}") from exc
 
 
 def generate_daily_report(db: Session, report_date: date | None = None) -> Report:
