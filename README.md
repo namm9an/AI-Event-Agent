@@ -153,6 +153,7 @@ APP_TIMEZONE=Asia/Kolkata
 DEFAULT_SCRAPE_TIME=00:00
 DEFAULT_REPORT_TIME=12:00
 REPORTS_DIR=./reports
+REPORT_FONT_PATH=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf
 
 # Scraping
 MAX_TOKENS_PER_PAGE=6000
