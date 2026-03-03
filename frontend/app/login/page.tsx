@@ -37,14 +37,26 @@ export default function LoginPage() {
           Monitor live event intelligence, inspect speakers, review daily PDF history, and tune scraping strategy from one command center.
         </p>
         <div className="mt-8 grid gap-3 sm:grid-cols-2">
-          <div className="metric-card rounded-xl p-4">
+          <button
+            type="button"
+            onClick={() => setUsername("user")}
+            className={`metric-card rounded-xl p-4 text-left transition ${
+              username === "user" ? "border-cyan shadow-lg shadow-cyan/20" : ""
+            }`}
+          >
             <p className="panel-title">Mode</p>
             <p className="mt-2 text-lg font-semibold">Read-only User</p>
-          </div>
-          <div className="metric-card rounded-xl p-4">
+          </button>
+          <button
+            type="button"
+            onClick={() => setUsername("super_admin")}
+            className={`metric-card rounded-xl p-4 text-left transition ${
+              username === "super_admin" ? "border-cyan shadow-lg shadow-cyan/20" : ""
+            }`}
+          >
             <p className="panel-title">Mode</p>
             <p className="mt-2 text-lg font-semibold">Super Admin</p>
-          </div>
+          </button>
         </div>
       </section>
 

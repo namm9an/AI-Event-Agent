@@ -12,7 +12,7 @@ export default function HomePage() {
           Scout Intelligence Stack
         </div>
 
-        <h1 className="heading-display max-w-4xl text-4xl leading-[0.95] text-white sm:text-6xl">
+        <h1 className="heading-display max-w-4xl text-3xl leading-[1.02] text-white sm:text-5xl">
           Move from random event hunting to a daily intelligence brief your team can use
         </h1>
 
