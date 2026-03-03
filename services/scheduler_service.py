@@ -96,6 +96,15 @@ class AppScheduler:
             db.close()
         self._register_jobs(settings, run_scrape_fn, run_report_fn)
 
+    def stop(self) -> None:
+        if not self.scheduler:
+            return
+        with self.lock:
+            if self.scheduler.running:
+                self.scheduler.shutdown(wait=False)
+            self.scheduler = None
+            self.initialized = False
+
     def info(self) -> dict:
         if not self.scheduler:
             return {"enabled": False}
