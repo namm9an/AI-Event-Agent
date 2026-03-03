@@ -248,7 +248,7 @@ def _is_duplicate(
     return None
 
 
-def _save_events(events_data: list[dict], scrape_run: ScrapeRun, db: Session) -> dict:
+def _save_events(events_data: list[dict], db: Session) -> dict:
     """
     Save parsed events to the database with per-event error isolation.
     Returns stats dict: {new, updated, speakers_found, skipped}.
@@ -589,7 +589,7 @@ def run_crew(queries: list[str] | None = None) -> dict:
                 i, evt.get("name", "MISSING"), evt.get("url", "MISSING")
             )
 
-        stats = _save_events(events_data, scrape_run, db)
+        stats = _save_events(events_data, db)
 
         scrape_run.status = "completed"
         scrape_run.completed_at = datetime.utcnow()
