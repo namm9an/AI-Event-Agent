@@ -1,0 +1,149 @@
+"""Daily PDF report generation and retrieval helpers."""
+
+import os
+import uuid
+from datetime import date, datetime
+from pathlib import Path
+
+from sqlalchemy.orm import Session, joinedload
+
+from config import REPORTS_DIR
+from db.models import Event, Report
+
+
+def _reports_root() -> Path:
+    path = Path(REPORTS_DIR)
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _collect_report_data(db: Session) -> tuple[list[Event], dict]:
+    events = (
+        db.query(Event)
+        .options(joinedload(Event.speakers))
+        .order_by(Event.last_scraped_at.desc())
+        .limit(200)
+        .all()
+    )
+
+    speakers = sum(len(e.speakers) for e in events)
+    summary = {
+        "events": len(events),
+        "speakers": speakers,
+        "generated_at": datetime.utcnow().isoformat(),
+    }
+    return events, summary
+
+
+def _build_report_text(events: list[Event], summary: dict) -> str:
+    lines = []
+    lines.append("AI Event Agent Daily Report")
+    lines.append(f"Generated at: {summary['generated_at']} UTC")
+    lines.append(f"Total events: {summary['events']}")
+    lines.append(f"Total speakers: {summary['speakers']}")
+    lines.append("")
+
+    for idx, event in enumerate(events, start=1):
+        lines.append(f"{idx}. {event.name}")
+        lines.append(f"   Date: {event.date_text}")
+        lines.append(f"   Location: {event.location}, {event.city}")
+        lines.append(f"   Status: {event.status}")
+        lines.append(f"   Event URL: {event.url}")
+        lines.append(f"   Topic links: {event.registration_url or 'N/A'}")
+        if event.speakers:
+            lines.append("   Speakers:")
+            for sp in event.speakers[:8]:
+                topic_links = ", ".join(sp.topic_links or []) if getattr(sp, "topic_links", None) else "N/A"
+                prev_talks = ", ".join(sp.previous_talks or []) if getattr(sp, "previous_talks", None) else "N/A"
+                lines.append(f"    - {sp.name} | {sp.designation} | {sp.company}")
+                lines.append(f"      Topic: {getattr(sp, 'topic_category', '') or sp.talk_title or 'N/A'}")
+                lines.append(f"      Topic links: {topic_links}")
+                lines.append(f"      LinkedIn: {getattr(sp, 'linkedin_url', '') or 'N/A'}")
+                lines.append(f"      Wikipedia: {getattr(sp, 'wikipedia_url', '') or 'N/A'}")
+                lines.append(f"      Previous talks: {prev_talks}")
+                if sp.talk_summary:
+                    lines.append(f"      Summary: {sp.talk_summary}")
+        lines.append("")
+
+    return "\n".join(lines)
+
+
+def _render_pdf(text: str, output_path: Path) -> None:
+    try:
+        from fpdf import FPDF
+        pdf = FPDF()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.add_page()
+        pdf.set_font("Helvetica", size=11)
+        for line in text.splitlines():
+            safe = line.encode("latin-1", "replace").decode("latin-1")
+            pdf.multi_cell(0, 6, safe)
+        pdf.output(str(output_path))
+        return
+    except Exception:
+        # Fallback: use PyMuPDF when fpdf2 is not installed.
+        import fitz
+
+        doc = fitz.open()
+        page = doc.new_page()
+        y = 72
+        for line in text.splitlines():
+            if y > 800:
+                page = doc.new_page()
+                y = 72
+            page.insert_text((50, y), line[:120], fontsize=10)
+            y += 14
+        doc.save(str(output_path))
+        doc.close()
+
+
+def generate_daily_report(db: Session, report_date: date | None = None) -> Report:
+    report_date = report_date or date.today()
+    existing = db.query(Report).filter(Report.report_date == report_date).first()
+
+    report_id = existing.id if existing else str(uuid.uuid4())
+    file_name = f"daily-report-{report_date.isoformat()}.pdf"
+    file_path = _reports_root() / file_name
+
+    if not existing:
+        existing = Report(
+            id=report_id,
+            report_date=report_date,
+            file_name=file_name,
+            file_path=str(file_path),
+            status="running",
+            summary_json={},
+            raw_text="",
+        )
+        db.add(existing)
+    else:
+        existing.status = "running"
+
+    db.commit()
+
+    events, summary = _collect_report_data(db)
+    raw_text = _build_report_text(events, summary)
+    _render_pdf(raw_text, file_path)
+
+    existing.file_name = file_name
+    existing.file_path = str(file_path)
+    existing.summary_json = summary
+    existing.raw_text = raw_text
+    existing.status = "ready"
+    existing.created_at = datetime.utcnow()
+    db.commit()
+    db.refresh(existing)
+    return existing
+
+
+def list_reports(db: Session) -> list[dict]:
+    reports = db.query(Report).order_by(Report.report_date.desc()).all()
+    items = []
+    for rep in reports:
+        item = rep.to_dict()
+        try:
+            item["size_bytes"] = os.path.getsize(rep.file_path)
+        except OSError:
+            item["size_bytes"] = None
+        items.append(item)
+    return items
