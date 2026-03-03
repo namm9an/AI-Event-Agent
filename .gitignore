@@ -1,0 +1,43 @@
+# AI Event Agent
+
+# Local-only folders (do not commit)
+.claude/
+docs/
+backend/reports/
+
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.next/
+venv/
+.venv/
+
+# Database
+events.db
+*.db
+
+# Environment
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+build/
+*.egg-info/
+
+# Logs
+*.log
