@@ -6,12 +6,12 @@ interface EventsTableProps {
 
 export default function EventsTable({ events }: EventsTableProps) {
   return (
-    <section className="frost rounded-2xl p-4">
-      <h2 className="section-title text-sm uppercase tracking-[0.2em] text-cyan">Events</h2>
+    <section className="panel rounded-2xl p-4">
+      <h2 className="panel-title">Events</h2>
       <div className="mt-4 overflow-x-auto">
-        <table className="min-w-full text-sm">
+        <table className="table-shell min-w-full text-sm">
           <thead>
-            <tr className="border-b border-white/15 text-left text-slate-300/90">
+            <tr className="text-left">
               <th className="px-3 py-2">Event</th>
               <th className="px-3 py-2">Date</th>
               <th className="px-3 py-2">City</th>
@@ -21,7 +21,7 @@ export default function EventsTable({ events }: EventsTableProps) {
           </thead>
           <tbody>
             {events.map((event) => (
-              <tr key={event.id} className="border-b border-white/10">
+              <tr key={event.id}>
                 <td className="px-3 py-3">
                   <p className="font-medium">{event.name}</p>
                   <a className="text-xs text-cyan hover:underline" href={event.url} target="_blank" rel="noreferrer">
