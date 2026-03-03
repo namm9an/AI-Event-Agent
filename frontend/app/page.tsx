@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import HomeRouter from "@/components/home-router";
+
 export default function HomePage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center gap-8 px-6 py-20">
