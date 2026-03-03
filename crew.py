@@ -225,13 +225,13 @@ def _is_duplicate(
     Second: fuzzy name + date match (threshold 85%).
 
     """
-    url = event_data.get("url", "")
+    url = str(event_data.get("url", "") or "").strip()
 
     if url and url in existing_by_url:
         return existing_by_url[url]
 
-    name = event_data.get("name", "")
-    date_text = event_data.get("date_text", "")
+    name = str(event_data.get("name", "") or "").strip()
+    date_text = str(event_data.get("date_text", "") or "").strip()
 
     if name:
         for existing in existing_events:
@@ -264,8 +264,8 @@ def _save_events(events_data: list[dict], db: Session) -> dict:
     used_placeholder_urls: set[str] = set(existing_by_url.keys())
 
     for event_data in events_data:
-        name = event_data.get("name", "").strip()
-        url = event_data.get("url", "").strip()
+        name = str(event_data.get("name", "") or "").strip()
+        url = str(event_data.get("url", "") or "").strip()
 
         if not name:
             logger.warning("Skipping event with no name: %s", json.dumps(event_data)[:300])
@@ -275,6 +275,8 @@ def _save_events(events_data: list[dict], db: Session) -> dict:
         if not url:
             slug = re.sub(r"[^a-z0-9-]", "-", name.lower())
             slug = re.sub(r"-+", "-", slug).strip("-")
+            if not slug:
+                slug = f"event-{uuid.uuid4().hex[:8]}"
             # Deduplicate placeholder URLs within the same batch
             candidate = f"https://event-agent.local/{slug}"
             suffix = 0
