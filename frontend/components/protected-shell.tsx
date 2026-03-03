@@ -41,7 +41,7 @@ export default function ProtectedShell({ children, requireRole }: ProtectedShell
   if (!ready) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="frost rounded-2xl px-8 py-6 text-sm text-slate-200/80">Validating session...</div>
+        <div className="panel rounded-2xl px-8 py-6 text-sm text-slate-200/80">Validating session...</div>
       </div>
     );
   }
