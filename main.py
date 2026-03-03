@@ -3,6 +3,7 @@
 import os
 import threading
 import uuid
+from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Optional
 
@@ -29,10 +30,23 @@ from services.scheduler_service import app_scheduler
 from services.settings_service import get_schedule_settings, set_setting
 
 
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    init_db()
+    app_scheduler.start(_trigger_crew_background, _trigger_report_background)
+    logger.info("FastAPI server started")
+    try:
+        yield
+    finally:
+        app_scheduler.stop()
+        logger.info("FastAPI server stopped")
+
+
 app = FastAPI(
     title="AI Event Agent API",
     description="Event and speaker intelligence with admin controls and daily reports",
     version="2.0.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -143,13 +157,6 @@ def _trigger_report_background() -> None:
     threading.Thread(target=_run_report_job, daemon=True).start()
 
 
-@app.on_event("startup")
-def startup() -> None:
-    init_db()
-    app_scheduler.start(_trigger_crew_background, _trigger_report_background)
-    logger.info("FastAPI server started")
-
-
 @app.post("/api/auth/login", response_model=LoginResponse)
 def login(request: LoginRequest):
     user = authenticate(request.username, request.password)
@@ -174,7 +181,10 @@ def me(user: AuthUser = Depends(get_current_user)):
 
 
 @app.get("/api/status")
-def get_status(db: Session = Depends(get_db)):
+def get_status(
+    db: Session = Depends(get_db),
+    _: AuthUser = Depends(get_current_user),
+):
     last_run = db.query(ScrapeRun).order_by(ScrapeRun.started_at.desc()).first()
     last_report = db.query(Report).order_by(Report.created_at.desc()).first()
     return {
