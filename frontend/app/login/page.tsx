@@ -29,15 +29,33 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-md items-center px-6 py-10">
-      <form onSubmit={onSubmit} className="frost w-full rounded-3xl p-8 shadow-xl shadow-cyan/10">
-        <p className="text-xs uppercase tracking-[0.2em] text-cyan">AI Event Agent</p>
-        <h1 className="mt-3 text-3xl font-semibold">Sign in</h1>
+    <main className="mx-auto grid min-h-screen w-full max-w-6xl items-center gap-6 px-4 py-10 sm:px-8 lg:grid-cols-[1.1fr_0.9fr]">
+      <section className="panel rounded-3xl p-8 sm:p-10">
+        <p className="panel-title">Agent Access</p>
+        <h1 className="heading-display mt-3 text-4xl sm:text-5xl">Welcome to Scout Console</h1>
+        <p className="mt-4 max-w-lg text-base text-[color:var(--text-soft)]">
+          Monitor live event intelligence, inspect speakers, review daily PDF history, and tune scraping strategy from one command center.
+        </p>
+        <div className="mt-8 grid gap-3 sm:grid-cols-2">
+          <div className="metric-card rounded-xl p-4">
+            <p className="panel-title">Mode</p>
+            <p className="mt-2 text-lg font-semibold">Read-only User</p>
+          </div>
+          <div className="metric-card rounded-xl p-4">
+            <p className="panel-title">Mode</p>
+            <p className="mt-2 text-lg font-semibold">Super Admin</p>
+          </div>
+        </div>
+      </section>
+
+      <form onSubmit={onSubmit} className="panel w-full rounded-3xl p-8">
+        <p className="panel-title">Authentication</p>
+        <h2 className="heading-display mt-3 text-3xl">Sign in</h2>
         <p className="mt-2 text-sm text-slate-300/80">Use `user` or `super_admin` credentials.</p>
 
         <label className="mt-7 block text-sm text-slate-200">Username</label>
         <input
-          className="mt-2 w-full rounded-xl border border-slate-300/25 bg-slate-950/50 px-4 py-3 outline-none focus:border-cyan"
+          className="input-shell mt-2 w-full rounded-xl px-4 py-3 outline-none focus:border-cyan"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="user"
@@ -47,7 +65,7 @@ export default function LoginPage() {
         <label className="mt-5 block text-sm text-slate-200">Password</label>
         <input
           type="password"
-          className="mt-2 w-full rounded-xl border border-slate-300/25 bg-slate-950/50 px-4 py-3 outline-none focus:border-cyan"
+          className="input-shell mt-2 w-full rounded-xl px-4 py-3 outline-none focus:border-cyan"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••••"
@@ -59,7 +77,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="mt-6 w-full rounded-xl bg-cyan px-4 py-3 font-semibold text-ink transition hover:brightness-110 disabled:opacity-70"
+          className="btn-primary mt-6 w-full rounded-xl px-4 py-3 font-semibold transition hover:brightness-110 disabled:opacity-70"
         >
           {loading ? "Signing in..." : "Sign in"}
         </button>

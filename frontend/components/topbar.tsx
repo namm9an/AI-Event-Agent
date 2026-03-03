@@ -10,24 +10,24 @@ export default function TopBar() {
   const role = getRole();
 
   return (
-    <header className="frost mb-6 rounded-2xl px-5 py-4">
+    <header className="panel mb-6 rounded-2xl px-5 py-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-cyan">Scout Console</p>
-          <h1 className="text-xl font-semibold">AI Event Agent</h1>
+          <p className="panel-title">Scout Console</p>
+          <h1 className="heading-display text-2xl">AI Event Agent</h1>
         </div>
         <div className="flex items-center gap-3 text-sm">
-          <Link className="rounded-lg border border-white/20 px-3 py-2 hover:bg-white/10" href="/dashboard">
+          <Link className="btn-secondary rounded-lg px-3 py-2 transition hover:bg-white/12" href="/dashboard">
             Dashboard
           </Link>
           {role === "super_admin" ? (
-            <Link className="rounded-lg border border-white/20 px-3 py-2 hover:bg-white/10" href="/settings">
+            <Link className="btn-secondary rounded-lg px-3 py-2 transition hover:bg-white/12" href="/settings">
               Settings
             </Link>
           ) : null}
           <button
             type="button"
-            className="rounded-lg bg-ember px-3 py-2 font-semibold text-ink"
+            className="btn-danger rounded-lg px-3 py-2 font-semibold"
             onClick={() => {
               clearSession();
               router.push("/login");

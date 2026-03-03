@@ -6,9 +6,9 @@ interface StatusOverviewProps {
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="frost rounded-2xl p-4">
-      <p className="text-xs uppercase tracking-[0.18em] text-slate-300/80">{label}</p>
-      <p className="mt-2 text-2xl font-semibold">{value}</p>
+    <div className="panel rounded-2xl p-4">
+      <p className="panel-title">{label}</p>
+      <p className="mt-2 text-3xl font-semibold heading-display">{value}</p>
     </div>
   );
 }
