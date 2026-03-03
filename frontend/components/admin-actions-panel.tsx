@@ -1,0 +1,55 @@
+"use client";
+
+import { useState } from "react";
+
+import { api } from "@/lib/api";
+
+interface AdminActionsPanelProps {
+  token: string;
+}
+
+export default function AdminActionsPanel({ token }: AdminActionsPanelProps) {
+  const [running, setRunning] = useState<"scrape" | "report" | null>(null);
+
+  async function runScrape() {
+    setRunning("scrape");
+    try {
+      await api.runNow(token);
+    } finally {
+      setRunning(null);
+    }
+  }
+
+  async function runReport() {
+    setRunning("report");
+    try {
+      await api.generateReportNow(token);
+    } finally {
+      setRunning(null);
+    }
+  }
+
+  return (
+    <section className="frost rounded-2xl p-4">
+      <h2 className="section-title text-sm uppercase tracking-[0.2em] text-cyan">Manual Actions</h2>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <button
+          type="button"
+          className="rounded-xl bg-cyan px-4 py-3 text-sm font-semibold text-ink"
+          onClick={runScrape}
+          disabled={running !== null}
+        >
+          {running === "scrape" ? "Running scrape..." : "Run Scrape Now"}
+        </button>
+        <button
+          type="button"
+          className="rounded-xl bg-ember px-4 py-3 text-sm font-semibold text-ink"
+          onClick={runReport}
+          disabled={running !== null}
+        >
+          {running === "report" ? "Generating report..." : "Generate Report Now"}
+        </button>
+      </div>
+    </section>
+  );
+}
