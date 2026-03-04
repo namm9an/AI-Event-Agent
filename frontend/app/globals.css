@@ -72,6 +72,21 @@ a {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Teal halftone gradient blob */
+.halftone-blob {
+  background: radial-gradient(circle at center, #19d3ff 0%, #53f6c4 100%);
+  mask-image: radial-gradient(circle, black 40%, transparent 80%);
+  -webkit-mask-image: radial-gradient(circle, black 40%, transparent 80%);
+  filter: blur(40px);
+  opacity: 0.55;
+}
+
+/* Dot grid overlay */
+.dots-pattern {
+  background-image: radial-gradient(rgba(25, 211, 255, 0.18) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
 .home-stage {
   position: relative;
   overflow: hidden;
