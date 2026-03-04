@@ -88,6 +88,51 @@ export default function HomePage() {
           </div>
         </section>
       </main>
+
+      {/* Features */}
+      <section className="relative py-32 bg-black overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="mb-20">
+            <h2 className="font-display text-3xl md:text-5xl font-bold uppercase tracking-tight mb-4 text-white">
+              Ecosystem <span className="text-primary">Intelligence</span>
+            </h2>
+            <div className="h-px w-20 bg-primary" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                icon: "🔍",
+                title: "Event Discovery",
+                body: "Real-time monitoring of AI/ML conferences, meetups, and hackathons across India. Never miss a strategic event.",
+              },
+              {
+                icon: "👤",
+                title: "Speaker Enrichment",
+                body: "Auto-extracted LinkedIn profiles, Wikipedia pages, previous talks, and topic links for every speaker.",
+              },
+              {
+                icon: "📄",
+                title: "Daily Reports",
+                body: "PDF intelligence brief generated at 12PM IST every day. Summarized by Nemotron — ready for your team.",
+              },
+            ].map((f) => (
+              <div
+                key={f.title}
+                className="glass-card rounded-xl p-10 flex flex-col gap-6 hover:border-primary/40 transition-all group"
+              >
+                <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center text-2xl group-hover:bg-primary/20 transition-all">
+                  {f.icon}
+                </div>
+                <div>
+                  <h3 className="font-display text-lg font-bold uppercase tracking-wider mb-3 text-white">{f.title}</h3>
+                  <p className="text-white/50 leading-relaxed text-sm">{f.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
