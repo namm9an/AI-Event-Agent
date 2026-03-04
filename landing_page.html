@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Event Scout | India's AI/ML Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1ad1ff",
+                        "accent": "#53f6c4",
+                        "background-light": "#000000",
+                        "background-dark": "#000000",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "sans": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .halftone-blob {
+            background: radial-gradient(circle at center, #1ad1ff 0%, #53f6c4 100%);
+            mask-image: radial-gradient(circle, black 40%, transparent 80%);
+            filter: blur(40px);
+            opacity: 0.6;
+        }
+        .dots-pattern {
+            background-image: radial-gradient(rgba(26, 209, 255, 0.2) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-slate-100 font-sans selection:bg-primary selection:text-background-dark overflow-x-hidden">
+<div class="relative min-h-screen flex flex-col">
+<!-- Navigation -->
+<header class="fixed top-0 w-full z-50 border-b border-white/10 bg-black/80 backdrop-blur-md">
+<nav class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="text-primary">
+<span class="material-symbols-outlined text-3xl font-bold">query_stats</span>
+</div>
+<h1 class="font-display font-bold text-xl tracking-widest uppercase">Scout</h1>
+</div>
+<div class="hidden md:flex items-center gap-10">
+<a class="text-sm font-medium hover:text-primary transition-colors uppercase tracking-wider" href="#">Home</a>
+<a class="text-sm font-medium hover:text-primary transition-colors uppercase tracking-wider" href="#">Dashboard</a>
+<a class="text-sm font-medium hover:text-primary transition-colors uppercase tracking-wider" href="#">Reports</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="group flex items-center gap-2 px-5 py-2.5 border border-primary text-primary rounded-full text-xs font-bold uppercase tracking-widest hover:bg-primary hover:text-black transition-all">
+<span>Open Dashboard</span>
+<span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</nav>
+</header>
+<!-- Hero Section -->
+<main class="relative flex-1 flex flex-col pt-20">
+<!-- Background Decorative Blob -->
+<div class="absolute top-1/4 -right-20 w-[600px] h-[600px] halftone-blob pointer-events-none"></div>
+<div class="absolute top-0 right-0 w-1/2 h-full dots-pattern opacity-30 pointer-events-none"></div>
+<section class="relative z-10 max-w-7xl mx-auto px-6 pt-24 pb-12 w-full flex flex-col justify-center min-h-[80vh]">
+<div class="w-full lg:w-[85%]">
+<h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.1] tracking-tighter uppercase mb-12">
+                        Discover Events. <br/>
+<span class="text-primary">/</span> Find Speakers. <br/>
+<span class="text-accent">/</span> Stay Ahead.
+                    </h1>
+</div>
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-10 mt-auto">
+<div class="max-w-2xl">
+<p class="text-lg md:text-xl text-slate-400 font-light leading-relaxed mb-10">
+                            Nemotron-powered intelligence for India AI/ML ecosystem. <br class="hidden md:block"/>
+                            Daily reports, speaker profiles, and event tracking — <span class="text-slate-100 font-medium">automated.</span>
+</p>
+<div class="flex flex-wrap gap-4">
+<button class="px-8 py-4 bg-primary text-black font-display font-bold text-sm uppercase tracking-[0.2em] rounded-lg hover:bg-accent transition-colors">
+                                Login to Scout
+                            </button>
+<button class="px-8 py-4 border border-white/20 text-white font-display font-bold text-sm uppercase tracking-[0.2em] rounded-lg hover:bg-white/10 transition-colors">
+                                View Reports
+                            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Stats Bar -->
+<section class="relative z-10 border-y border-white/10 bg-black/50 backdrop-blur-sm">
+<div class="max-w-7xl mx-auto px-6 py-10">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+<div class="flex flex-col md:flex-row md:items-center gap-3">
+<span class="text-2xl font-display font-bold text-primary">200+</span>
+<span class="text-xs uppercase tracking-[0.2em] text-slate-500">Events tracked</span>
+</div>
+<div class="flex flex-col md:flex-row md:items-center gap-3">
+<span class="text-2xl font-display font-bold text-primary">500+</span>
+<span class="text-xs uppercase tracking-[0.2em] text-slate-500">Speakers indexed</span>
+</div>
+<div class="flex flex-col md:flex-row md:items-center gap-3">
+<span class="text-2xl font-display font-bold text-primary">Daily</span>
+<span class="text-xs uppercase tracking-[0.2em] text-slate-500">PDF Reports</span>
+</div>
+<div class="flex flex-col md:flex-row md:items-center gap-3 border-none">
+<span class="text-2xl font-display font-bold text-primary">India</span>
+<span class="text-xs uppercase tracking-[0.2em] text-slate-500">Focused Engine</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Features Section -->
+<section class="relative py-32 bg-background-dark overflow-hidden">
+<div class="max-w-7xl mx-auto px-6 relative z-10">
+<div class="mb-20">
+<h2 class="font-display text-3xl md:text-5xl font-bold uppercase tracking-tight mb-4">Ecosystem <span class="text-primary">Intelligence</span></h2>
+<div class="h-1 w-20 bg-primary"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Feature 1 -->
+<div class="glass-card rounded-xl p-10 flex flex-col gap-6 hover:border-primary/40 transition-all group">
+<div class="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all">
+<span class="material-symbols-outlined text-3xl">explore</span>
+</div>
+<div>
+<h3 class="font-display text-xl font-bold uppercase tracking-wider mb-3">Event Discovery</h3>
+<p class="text-slate-400 leading-relaxed">
+                                Real-time monitoring of tech conferences, meetups, and hackathons across India's AI hubs. Never miss a networking opportunity again.
+                            </p>
+</div>
+</div>
+<!-- Feature 2 -->
+<div class="glass-card rounded-xl p-10 flex flex-col gap-6 hover:border-primary/40 transition-all group">
+<div class="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all">
+<span class="material-symbols-outlined text-3xl">person_search</span>
+</div>
+<div>
+<h3 class="font-display text-xl font-bold uppercase tracking-wider mb-3">Speaker Enrichment</h3>
+<p class="text-slate-400 leading-relaxed">
+                                Deep-dive profiles of industry leaders. We track past talks, research papers, and social influence to give you a 360-degree view.
+                            </p>
+</div>
+</div>
+<!-- Feature 3 -->
+<div class="glass-card rounded-xl p-10 flex flex-col gap-6 hover:border-primary/40 transition-all group">
+<div class="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-all">
+<span class="material-symbols-outlined text-3xl">description</span>
+</div>
+<div>
+<h3 class="font-display text-xl font-bold uppercase tracking-wider mb-3">Daily Reports</h3>
+<p class="text-slate-400 leading-relaxed">
+                                Automated PDF intelligence delivered daily. Our Nemotron engine summarizes the most critical shifts in the ecosystem for quick consumption.
+                            </p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="border-t border-white/10 py-16 bg-black">
+<div class="max-w-7xl mx-auto px-6">
+<div class="flex flex-col md:flex-row justify-between items-center gap-10">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-2xl text-primary">query_stats</span>
+<h2 class="font-display font-bold text-lg tracking-widest uppercase">Scout</h2>
+</div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="text-xs uppercase tracking-widest text-slate-500 hover:text-white transition-colors" href="#">Privacy Policy</a>
+<a class="text-xs uppercase tracking-widest text-slate-500 hover:text-white transition-colors" href="#">Terms of Service</a>
+<a class="text-xs uppercase tracking-widest text-slate-500 hover:text-white transition-colors" href="#">Contact Support</a>
+</div>
+<div class="flex gap-6">
+<a class="text-slate-500 hover:text-primary transition-colors" href="#">
+<svg class="w-5 h-5 fill-current" viewbox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"></path></svg>
+</a>
+<a class="text-slate-500 hover:text-primary transition-colors" href="#">
+<svg class="w-5 h-5 fill-current" viewbox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"></path></svg>
+</a>
+</div>
+</div>
+<div class="mt-12 text-center text-slate-600 text-[10px] uppercase tracking-[0.3em]">
+                    © 2024 AI Event Scout. Powered by Nemotron Intelligence Engine.
+                </div>
+</div>
+</footer>
+</div>
+</body></html>

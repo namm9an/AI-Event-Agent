@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Event Scout | Sign In</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "primary": "#19d3ff",
+                    "accent": "#53f6c4",
+                    "background-dark": "#000000",
+                },
+                fontFamily: {
+                    "display": ["Space Grotesk", "sans-serif"],
+                    "sans": ["Inter", "sans-serif"]
+                },
+                borderRadius: {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+                },
+            },
+        },
+    }
+</script>
+<style>
+    * { box-sizing: border-box; }
+
+    body {
+        background: #000000;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Inter', sans-serif;
+        overflow: hidden;
+        position: relative;
+    }
+
+    /* Teal halftone glow in top-right corner */
+    .corner-glow {
+        position: fixed;
+        top: -120px;
+        right: -120px;
+        width: 520px;
+        height: 520px;
+        background: radial-gradient(circle at center, rgba(25, 211, 255, 0.25) 0%, rgba(83, 246, 196, 0.12) 45%, transparent 75%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .dots-overlay {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 40%;
+        height: 50%;
+        background-image: radial-gradient(rgba(25, 211, 255, 0.15) 1px, transparent 1px);
+        background-size: 18px 18px;
+        pointer-events: none;
+        z-index: 0;
+        mask-image: radial-gradient(ellipse at top right, black 0%, transparent 70%);
+    }
+
+    .login-card {
+        background: rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        width: 100%;
+        max-width: 420px;
+        padding: 48px 40px;
+        position: relative;
+        z-index: 10;
+    }
+
+    .input-field {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 14px 16px;
+        color: #ffffff;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s, background 0.2s;
+    }
+
+    .input-field::placeholder {
+        color: rgba(255, 255, 255, 0.35);
+    }
+
+    .input-field:focus {
+        border-color: rgba(25, 211, 255, 0.5);
+        background: rgba(255, 255, 255, 0.09);
+    }
+
+    .sign-in-btn {
+        width: 100%;
+        background: #19d3ff;
+        color: #000000;
+        border: none;
+        border-radius: 8px;
+        padding: 14px 24px;
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+    }
+
+    .sign-in-btn:hover {
+        background: #53f6c4;
+        transform: translateY(-1px);
+    }
+
+    .sign-in-btn:active {
+        transform: translateY(0);
+    }
+
+    .role-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 9999px;
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.45);
+        background: rgba(255, 255, 255, 0.03);
+        letter-spacing: 0.05em;
+    }
+
+    .logo-mark {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #19d3ff 0%, #53f6c4 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 13px;
+        color: #000000;
+        letter-spacing: 0.08em;
+    }
+</style>
+</head>
+<body>
+<!-- Top-right corner teal glow -->
+<div class="corner-glow"></div>
+<div class="dots-overlay"></div>
+
+<!-- Login Card -->
+<div class="login-card">
+    <!-- Logo -->
+    <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:32px;">
+        <div class="logo-mark">S</div>
+        <div style="margin-top:10px; display:flex; align-items:center; gap:6px;">
+            <span style="font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; color:rgba(255,255,255,0.9); letter-spacing:0.12em; text-transform:uppercase;">AI Event Scout</span>
+        </div>
+    </div>
+
+    <!-- Headline -->
+    <h1 style="font-family:'Space Grotesk',sans-serif; font-size:28px; font-weight:700; color:#ffffff; margin:0 0 8px 0; text-align:center;">Sign in</h1>
+
+    <!-- Subtitle -->
+    <p style="font-family:'Inter',sans-serif; font-size:13px; color:rgba(255,255,255,0.45); text-align:center; margin:0 0 32px 0; line-height:1.6;">
+        Use your team credentials to access the dashboard
+    </p>
+
+    <!-- Form -->
+    <form onsubmit="return false;" style="display:flex; flex-direction:column; gap:14px;">
+        <div>
+            <label style="display:block; font-family:'Inter',sans-serif; font-size:11px; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px;">Username</label>
+            <input class="input-field" type="text" placeholder="Enter your username" autocomplete="username"/>
+        </div>
+        <div>
+            <label style="display:block; font-family:'Inter',sans-serif; font-size:11px; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px;">Password</label>
+            <input class="input-field" type="password" placeholder="Enter your password" autocomplete="current-password"/>
+        </div>
+
+        <div style="margin-top:8px;">
+            <button class="sign-in-btn" type="submit">Sign in</button>
+        </div>
+    </form>
+
+    <!-- Divider -->
+    <div style="border-top:1px solid rgba(255,255,255,0.07); margin:28px 0 20px 0;"></div>
+
+    <!-- Role hint pills -->
+    <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
+        <span style="font-family:'Inter',sans-serif; font-size:11px; color:rgba(255,255,255,0.3); margin-right:4px;">Roles:</span>
+        <span class="role-pill">user</span>
+        <span class="role-pill">super_admin</span>
+    </div>
+</div>
+</body>
+</html>
