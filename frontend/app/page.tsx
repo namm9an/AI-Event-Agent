@@ -31,8 +31,44 @@ export default function HomePage() {
         </nav>
       </header>
 
-      {/* Body placeholder */}
-      <main className="relative flex-1 flex flex-col pt-20" />
+      {/* Hero */}
+      <main className="relative flex-1 flex flex-col pt-20">
+        {/* Halftone blob */}
+        <div className="absolute top-1/4 -right-20 w-[600px] h-[600px] halftone-blob pointer-events-none" />
+        <div className="absolute top-0 right-0 w-1/2 h-full dots-pattern opacity-25 pointer-events-none" />
+
+        <section className="relative z-10 max-w-7xl mx-auto px-6 pt-24 pb-12 w-full flex flex-col justify-center min-h-[85vh]">
+          <div className="w-full lg:w-[80%]">
+            <h1 className="font-display text-5xl md:text-7xl lg:text-[6rem] font-bold leading-[1.05] tracking-tighter uppercase mb-12 text-white">
+              Discover Events.<br />
+              <span className="text-primary">/</span> Find Speakers.<br />
+              <span className="text-accent">/</span> Stay Ahead.
+            </h1>
+          </div>
+
+          <div className="max-w-xl">
+            <p className="text-lg text-white/50 font-light leading-relaxed mb-10">
+              Nemotron-powered intelligence for India&apos;s AI/ML ecosystem.<br />
+              Daily reports, speaker profiles, and event tracking —{" "}
+              <span className="text-white font-medium">automated.</span>
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Link
+                href="/login"
+                className="px-8 py-4 bg-primary text-black font-display font-bold text-sm uppercase tracking-[0.2em] rounded-lg hover:bg-accent transition-colors"
+              >
+                Login to Scout ↗
+              </Link>
+              <Link
+                href="/dashboard"
+                className="px-8 py-4 border border-white/20 text-white font-display font-bold text-sm uppercase tracking-[0.2em] rounded-lg hover:bg-white/10 transition-colors"
+              >
+                View Reports
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
