@@ -64,7 +64,63 @@ export default function LoginPage() {
             Use your team credentials to access the dashboard
           </p>
 
-          {/* Form + role pills placeholders — added in next commits */}
+          {/* Form */}
+          <form onSubmit={onSubmit} className="flex flex-col gap-3.5">
+            <div>
+              <label className="block text-[11px] text-white/45 uppercase tracking-[0.1em] mb-1.5">
+                Username
+              </label>
+              <input
+                className="scout-input"
+                type="text"
+                placeholder="Enter your username"
+                autoComplete="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] text-white/45 uppercase tracking-[0.1em] mb-1.5">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  className="scout-input pr-16"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-white/40 hover:text-white/70 transition-colors uppercase tracking-wider"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <p className="text-[13px] text-ember mt-1">{error}</p>
+            )}
+
+            <div className="mt-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-primary text-black border-none rounded-lg py-3.5 px-6 font-display font-bold text-[14px] uppercase tracking-[0.12em] cursor-pointer transition-all hover:bg-accent hover:-translate-y-px active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {loading ? "Signing in..." : "Sign in"}
+              </button>
+            </div>
+          </form>
+
+          {/* Role pills — added in next commit */}
         </div>
       </div>
     </div>
