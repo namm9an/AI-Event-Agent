@@ -4,7 +4,7 @@
 
 :root {
   --font-heading: "Space Grotesk", "Avenir Next", "Gill Sans", "Trebuchet MS", sans-serif;
-  --font-body: "Manrope", "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+  --font-body: "Inter", "Manrope", "Segoe UI", "Helvetica Neue", sans-serif;
   --bg-start: #09162d;
   --bg-mid: #0e2550;
   --bg-end: #0f3e55;
@@ -13,9 +13,10 @@
   --line: rgba(255, 255, 255, 0.14);
   --text-main: #f2f7ff;
   --text-soft: #b7c7df;
-  --accent: #32d6ff;
-  --accent-2: #7df3cf;
+  --accent: #19d3ff;
+  --accent-2: #53f6c4;
   --danger: #ff7d93;
+  --primary: #19d3ff;
 }
 
 * {
