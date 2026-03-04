@@ -5,16 +5,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#0b1220",
-        slate: "#111d34",
+        ink: "#000000",
+        primary: "#19d3ff",
+        accent: "#53f6c4",
+        sand: "#f2f7ff",
+        ember: "#ff7d93",
+        // keep old names for dashboard compatibility
         cyan: "#19d3ff",
         mint: "#53f6c4",
-        sand: "#f3eadc",
-        ember: "#ff8c5a"
-      }
-    }
+        slate: "#111d34",
+      },
+      fontFamily: {
+        display: ["var(--font-display)", "Space Grotesk", "sans-serif"],
+        sans: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
+      },
+    },
   },
-  plugins: []
+  plugins: [],
 };
 
 export default config;
