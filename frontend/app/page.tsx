@@ -133,6 +133,39 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* CTA */}
+      <section className="border-t border-white/10 py-24 bg-black">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <h2 className="font-display text-4xl md:text-6xl font-bold uppercase tracking-tight text-white mb-6">
+            Ready to <span className="text-primary">Scout?</span>
+          </h2>
+          <p className="text-white/40 text-lg mb-10 max-w-xl mx-auto">
+            Get your team&apos;s daily intelligence brief. Powered by Nemotron.
+          </p>
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 px-10 py-4 bg-primary text-black font-display font-bold text-sm uppercase tracking-[0.2em] rounded-lg hover:bg-accent transition-colors"
+          >
+            Open Dashboard ↗
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-white/10 py-12 bg-black">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <span className="text-black font-bold text-[10px]">S</span>
+            </div>
+            <span className="font-display font-bold tracking-widest uppercase text-white text-sm">Scout</span>
+          </div>
+          <p className="text-white/20 text-xs uppercase tracking-[0.25em]">
+            © 2026 AI Event Scout · Powered by Nemotron
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
