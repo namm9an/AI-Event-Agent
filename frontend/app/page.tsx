@@ -68,6 +68,25 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        {/* Stats bar */}
+        <section className="relative z-10 border-y border-white/10 bg-black/50 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-6 py-10">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {[
+                { value: "200+", label: "Events Tracked" },
+                { value: "500+", label: "Speakers Indexed" },
+                { value: "Daily", label: "PDF Reports" },
+                { value: "India", label: "Focused Engine" },
+              ].map((stat) => (
+                <div key={stat.label} className="flex flex-col md:flex-row md:items-center gap-3">
+                  <span className="text-2xl font-display font-bold text-primary">{stat.value}</span>
+                  <span className="text-xs uppercase tracking-[0.2em] text-white/40">{stat.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );
