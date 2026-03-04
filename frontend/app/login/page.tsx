@@ -10,6 +10,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState("user");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -18,82 +19,54 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.login(username, password);
+      const data = await api.login(username.trim(), password);
       setSession(data.access_token, data.role);
       router.push(data.role === "super_admin" ? "/settings" : "/dashboard");
     } catch (err) {
-      setError("Login failed. Check username/password.");
+      const message = err instanceof Error ? err.message : "Login failed.";
+      if (message.includes("Failed to fetch")) {
+        setError("Login failed: API not reachable. Check NEXT_PUBLIC_API_URL and backend server.");
+      } else {
+        setError("Login failed. Check username/password.");
+      }
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main className="mx-auto grid min-h-screen w-full max-w-6xl items-center gap-6 px-4 py-10 sm:px-8 lg:grid-cols-[1.1fr_0.9fr]">
-      <section className="panel rounded-3xl p-8 sm:p-10">
-        <p className="panel-title">Agent Access</p>
-        <h1 className="heading-display mt-3 text-4xl sm:text-5xl">Welcome to Scout Console</h1>
-        <p className="mt-4 max-w-lg text-base text-[color:var(--text-soft)]">
-          Monitor live event intelligence, inspect speakers, review daily PDF history, and tune scraping strategy from one command center.
-        </p>
-        <div className="mt-8 grid gap-3 sm:grid-cols-2">
-          <button
-            type="button"
-            onClick={() => setUsername("user")}
-            className={`metric-card rounded-xl p-4 text-left transition ${
-              username === "user" ? "border-cyan shadow-lg shadow-cyan/20" : ""
-            }`}
-          >
-            <p className="panel-title">Mode</p>
-            <p className="mt-2 text-lg font-semibold">Read-only User</p>
-          </button>
-          <button
-            type="button"
-            onClick={() => setUsername("super_admin")}
-            className={`metric-card rounded-xl p-4 text-left transition ${
-              username === "super_admin" ? "border-cyan shadow-lg shadow-cyan/20" : ""
-            }`}
-          >
-            <p className="panel-title">Mode</p>
-            <p className="mt-2 text-lg font-semibold">Super Admin</p>
-          </button>
+    <div className="scout-black relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Corner teal glow */}
+      <div className="corner-glow" />
+      {/* Dots overlay */}
+      <div className="dots-overlay-login" />
+
+      {/* Login card */}
+      <div className="relative z-10 w-full max-w-[420px] mx-4">
+        <div className="glass-card rounded-2xl px-10 py-12">
+          {/* Logo */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <span className="font-display font-bold text-sm text-black tracking-wider">S</span>
+            </div>
+            <div className="mt-2.5 flex items-center gap-1.5">
+              <span className="font-display text-[13px] font-semibold text-white/90 tracking-[0.12em] uppercase">
+                AI Event Scout
+              </span>
+            </div>
+          </div>
+
+          {/* Headline */}
+          <h1 className="font-display text-[28px] font-bold text-white text-center mb-2">
+            Sign in
+          </h1>
+          <p className="text-[13px] text-white/45 text-center leading-relaxed mb-8">
+            Use your team credentials to access the dashboard
+          </p>
+
+          {/* Form + role pills placeholders — added in next commits */}
         </div>
-      </section>
-
-      <form onSubmit={onSubmit} className="panel w-full rounded-3xl p-8">
-        <p className="panel-title">Authentication</p>
-        <h2 className="heading-display mt-3 text-3xl">Sign in</h2>
-        <p className="mt-2 text-sm text-slate-300/80">Use `user` or `super_admin` credentials.</p>
-
-        <label className="mt-7 block text-sm text-slate-200">Username</label>
-        <input
-          className="input-shell mt-2 w-full rounded-xl px-4 py-3 outline-none focus:border-cyan"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="user"
-          required
-        />
-
-        <label className="mt-5 block text-sm text-slate-200">Password</label>
-        <input
-          type="password"
-          className="input-shell mt-2 w-full rounded-xl px-4 py-3 outline-none focus:border-cyan"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
-          required
-        />
-
-        {error ? <p className="mt-4 text-sm text-ember">{error}</p> : null}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="btn-primary mt-6 w-full rounded-xl px-4 py-3 font-semibold transition hover:brightness-110 disabled:opacity-70"
-        >
-          {loading ? "Signing in..." : "Sign in"}
-        </button>
-      </form>
-    </main>
+      </div>
+    </div>
   );
 }
