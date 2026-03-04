@@ -113,6 +113,41 @@ a {
   -webkit-mask-image: radial-gradient(ellipse at top right, black 0%, transparent 70%);
 }
 
+/* Login input */
+.scout-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 14px 16px;
+  color: #ffffff;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.scout-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.scout-input:focus {
+  border-color: rgba(25, 211, 255, 0.5);
+  background: rgba(255, 255, 255, 0.09);
+}
+
+/* Role pill */
+.role-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.03);
+  letter-spacing: 0.05em;
+}
+
 .home-stage {
   position: relative;
   overflow: hidden;
