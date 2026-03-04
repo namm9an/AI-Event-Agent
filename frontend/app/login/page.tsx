@@ -120,7 +120,27 @@ export default function LoginPage() {
             </div>
           </form>
 
-          {/* Role pills — added in next commit */}
+          {/* Divider */}
+          <div className="border-t border-white/[0.07] my-7" />
+
+          {/* Role hint pills */}
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-[11px] text-white/30 mr-1">Roles:</span>
+            <button
+              type="button"
+              onClick={() => setUsername("user")}
+              className={`role-pill transition-colors ${username === "user" ? "border-primary/50 text-primary" : ""}`}
+            >
+              user
+            </button>
+            <button
+              type="button"
+              onClick={() => setUsername("super_admin")}
+              className={`role-pill transition-colors ${username === "super_admin" ? "border-primary/50 text-primary" : ""}`}
+            >
+              super_admin
+            </button>
+          </div>
         </div>
       </div>
     </div>
