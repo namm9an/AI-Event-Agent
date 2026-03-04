@@ -87,6 +87,32 @@ a {
   background-size: 20px 20px;
 }
 
+/* Login corner glow */
+.corner-glow {
+  position: fixed;
+  top: -120px;
+  right: -120px;
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle at center, rgba(25, 211, 255, 0.22) 0%, rgba(83, 246, 196, 0.1) 45%, transparent 75%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dots-overlay-login {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 40%;
+  height: 50%;
+  background-image: radial-gradient(rgba(25, 211, 255, 0.13) 1px, transparent 1px);
+  background-size: 18px 18px;
+  pointer-events: none;
+  z-index: 0;
+  mask-image: radial-gradient(ellipse at top right, black 0%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at top right, black 0%, transparent 70%);
+}
+
 .home-stage {
   position: relative;
   overflow: hidden;
