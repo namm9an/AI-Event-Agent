@@ -22,7 +22,7 @@ from auth import (
     require_super_admin,
 )
 from config import JWT_EXPIRE_HOURS, logger
-from crew import run_crew
+from pipeline import run_pipeline
 from db.database import SessionLocal, get_db, init_db
 from db.models import Event, Report, ScrapeRun, SearchQuery, Speaker
 from services.report_service import generate_daily_report, list_reports
@@ -115,12 +115,20 @@ _last_report_result = None
 def _run_crew_job() -> None:
     global _crew_running, _last_crew_result
     try:
-        _last_crew_result = run_crew()
+        _last_crew_result = run_pipeline()
     except Exception as exc:
-        logger.error("Crew run failed: %s", exc)
+        logger.error("Pipeline run failed: %s", exc)
         _last_crew_result = {"status": "failed", "errors": [str(exc)]}
     finally:
         _crew_running = False
+
+    # Auto-trigger report generation after a successful scrape
+    if _last_crew_result and _last_crew_result.get("status") == "completed":
+        try:
+            _trigger_report_background()
+            logger.info("Auto-triggered report generation after successful scrape")
+        except Exception as exc:
+            logger.warning("Auto-trigger report failed: %s", exc)
 
 
 def _trigger_crew_background() -> None:
