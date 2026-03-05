@@ -21,7 +21,7 @@ export default function LoginPage() {
     try {
       const data = await api.login(username.trim(), password);
       setSession(data.access_token, data.role);
-      router.push(data.role === "super_admin" ? "/settings" : "/dashboard");
+      router.push("/dashboard");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Login failed.";
       if (message.includes("Failed to fetch")) {
