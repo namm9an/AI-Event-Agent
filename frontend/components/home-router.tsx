@@ -12,7 +12,7 @@ export default function HomeRouter() {
     const token = getToken();
     const role = getRole();
     if (!token || !role) return;
-    router.replace(role === "super_admin" ? "/settings" : "/dashboard");
+    router.replace("/dashboard");
   }, [router]);
 
   return null;
