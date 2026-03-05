@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { api } from "@/lib/api";
 
@@ -11,6 +13,7 @@ interface AdminActionsPanelProps {
 export default function AdminActionsPanel({ token }: AdminActionsPanelProps) {
   const [running, setRunning] = useState<"scrape" | "report" | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (!token) return;
@@ -50,6 +53,7 @@ export default function AdminActionsPanel({ token }: AdminActionsPanelProps) {
     setRunning("report");
     try {
       await api.generateReportNow(token);
+      router.push("/dashboard");
     } catch {
       setRunning(null);
     }
