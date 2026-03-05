@@ -49,7 +49,23 @@ export const api = {
 
   reports: (token: string) => request<{ reports: ReportItem[] }>("/api/reports", {}, token),
 
-  downloadReportUrl: (reportId: string) => `${API_BASE}/api/reports/${reportId}/download`,
+  downloadReport: async (token: string, reportId: string, fileName: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/api/reports/${reportId}/download`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store"
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(body || `Download failed: ${res.status}`);
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = fileName || `report-${reportId}.pdf`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  },
 
   chat: (token: string, payload: { message: string; history: Array<{ role: string; content: string }>; report_id?: string }) =>
     request<{ response: string }>(
