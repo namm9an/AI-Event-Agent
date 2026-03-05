@@ -1,9 +1,12 @@
 """Daily PDF report generation and retrieval helpers."""
 
 import os
+import re as _re
 import uuid
 from datetime import date, datetime
 from pathlib import Path
+
+_LINK_RE = _re.compile(r'^\[LINK\](https?://\S+)\[/LINK\]$')
 
 from sqlalchemy.orm import Session, joinedload
 
@@ -58,8 +61,10 @@ def _build_report_text(events: list[Event], summary: dict) -> str:
                 lines.append(f"    - {sp.name} | {sp.designation} | {sp.company}")
                 lines.append(f"      Topic: {getattr(sp, 'topic_category', '') or sp.talk_title or 'N/A'}")
                 lines.append(f"      Topic links: {topic_links}")
-                lines.append(f"      LinkedIn: {getattr(sp, 'linkedin_url', '') or 'N/A'}")
-                lines.append(f"      Wikipedia: {getattr(sp, 'wikipedia_url', '') or 'N/A'}")
+                linkedin = getattr(sp, 'linkedin_url', '') or ''
+                wikipedia = getattr(sp, 'wikipedia_url', '') or ''
+                lines.append(f"      LinkedIn: [LINK]{linkedin}[/LINK]" if linkedin else "      LinkedIn: N/A")
+                lines.append(f"      Wikipedia: [LINK]{wikipedia}[/LINK]" if wikipedia else "      Wikipedia: N/A")
                 lines.append(f"      Previous talks: {prev_talks}")
                 if sp.talk_summary:
                     lines.append(f"      Summary: {sp.talk_summary}")
@@ -108,7 +113,14 @@ def _render_pdf(text: str, output_path: Path) -> None:
                 )
 
         for line in text.splitlines():
-            pdf.multi_cell(0, 6, line)
+            m = _LINK_RE.match(line.strip())
+            if m:
+                url = m.group(1)
+                pdf.set_text_color(26, 211, 255)  # cyan for clickable links
+                pdf.cell(0, 6, url, link=url, new_x="LMARGIN", new_y="NEXT")
+                pdf.set_text_color(0, 0, 0)
+            else:
+                pdf.multi_cell(0, 6, line)
         pdf.output(str(output_path))
         return
     except Exception as exc:
@@ -124,7 +136,8 @@ def _render_pdf(text: str, output_path: Path) -> None:
             if y > 800:
                 page = doc.new_page()
                 y = 72
-            page.insert_text((50, y), line[:120], fontsize=10)
+            clean_line = _re.sub(r'\[/?LINK\]', '', line)
+            page.insert_text((50, y), clean_line[:120], fontsize=10)
             y += 14
         doc.save(str(output_path))
         doc.close()
