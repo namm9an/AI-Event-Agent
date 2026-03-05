@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { api } from "@/lib/api";
 
@@ -10,12 +10,38 @@ interface AdminActionsPanelProps {
 
 export default function AdminActionsPanel({ token }: AdminActionsPanelProps) {
   const [running, setRunning] = useState<"scrape" | "report" | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (!token) return;
+
+    async function pollStatus() {
+      try {
+        const s = await api.status(token);
+        if (s.crew_running) {
+          setRunning("scrape");
+        } else if (s.report_running) {
+          setRunning("report");
+        } else {
+          setRunning(null);
+        }
+      } catch {
+        // silent
+      }
+    }
+
+    pollStatus();
+    pollRef.current = setInterval(pollStatus, 3000);
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [token]);
 
   async function runScrape() {
     setRunning("scrape");
     try {
       await api.runNow(token);
-    } finally {
+    } catch {
       setRunning(null);
     }
   }
@@ -24,10 +50,18 @@ export default function AdminActionsPanel({ token }: AdminActionsPanelProps) {
     setRunning("report");
     try {
       await api.generateReportNow(token);
-    } finally {
+    } catch {
       setRunning(null);
     }
   }
+
+  // Small spinner SVG
+  const spinner = (
+    <svg className="animate-spin" width="16" height="16" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="2" strokeOpacity="0.25" />
+      <path d="M11 6A5 5 0 0 0 6 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
 
   return (
     <section className="glass-card rounded-xl p-8">
@@ -41,7 +75,7 @@ export default function AdminActionsPanel({ token }: AdminActionsPanelProps) {
           disabled={running !== null}
           className="flex items-center justify-center gap-3 h-16 bg-primary text-black font-bold rounded-lg hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-display uppercase tracking-widest text-sm"
         >
-          {running === "scrape" ? "Running Scrape..." : "Run Scrape Now"}
+          {running === "scrape" ? <>{spinner} SCRAPING IN PROGRESS...</> : "Run Scrape Now"}
         </button>
         <button
           type="button"
@@ -49,7 +83,7 @@ export default function AdminActionsPanel({ token }: AdminActionsPanelProps) {
           disabled={running !== null}
           className="flex items-center justify-center gap-3 h-16 border border-[#ff7d93]/40 text-[#ff7d93] font-bold rounded-lg hover:bg-[#ff7d93]/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-display uppercase tracking-widest text-sm"
         >
-          {running === "report" ? "Generating Report..." : "Generate Report Now"}
+          {running === "report" ? <>{spinner} BUILDING REPORT...</> : "Generate Report Now"}
         </button>
       </div>
     </section>
