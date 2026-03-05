@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useRouter } from "next/navigation";
 
 import { api } from "@/lib/api";
 
