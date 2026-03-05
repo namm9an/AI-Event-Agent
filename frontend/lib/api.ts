@@ -68,6 +68,20 @@ export const api = {
     URL.revokeObjectURL(url);
   },
 
+  viewReport: async (token: string, reportId: string): Promise<void> => {
+    const res = await fetch(`${API_BASE}/api/reports/${reportId}/download`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store"
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(body || `View failed: ${res.status}`);
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank");
+  },
+
   deleteReport: (token: string, reportId: string) =>
     request<{ deleted: boolean; id: string }>(
       `/api/reports/${reportId}`,

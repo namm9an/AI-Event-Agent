@@ -9,6 +9,7 @@ interface ReportsSidebarProps {
   reportRunning?: boolean;
   onSelect: (reportId: string) => void;
   onDownload: (reportId: string) => void;
+  onView: (reportId: string) => void;
   onDelete: (reportId: string) => void;
 }
 
@@ -19,6 +20,7 @@ export default function ReportsSidebar({
   reportRunning,
   onSelect,
   onDownload,
+  onView,
   onDelete,
 }: ReportsSidebarProps) {
   function handleDelete(e: React.MouseEvent, reportId: string) {
@@ -93,6 +95,13 @@ export default function ReportsSidebar({
                   {report.file_name}
                 </p>
                 <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onView(report.id); }}
+                    className="text-xs font-bold text-accent flex items-center gap-1 hover:text-primary transition-colors"
+                  >
+                    ↗ VIEW
+                  </button>
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); onDownload(report.id); }}

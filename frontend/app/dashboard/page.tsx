@@ -72,6 +72,10 @@ export default function DashboardPage() {
     fetchData();
   }, [fetchData]);
 
+  function viewReport(reportId: string) {
+    api.viewReport(token, reportId).catch(() => {});
+  }
+
   function downloadReport(reportId: string) {
     const report = reports.find((r) => r.id === reportId);
     api
@@ -129,6 +133,7 @@ export default function DashboardPage() {
               scrapeRunning={scrapeRunning}
               reportRunning={reportRunning}
               onSelect={setActiveReportId}
+              onView={viewReport}
               onDownload={downloadReport}
               onDelete={deleteReport}
             />
