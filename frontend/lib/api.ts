@@ -40,7 +40,8 @@ export const api = {
 
   me: (token: string) => request<MeResponse>("/api/auth/me", {}, token),
 
-  status: (token: string) => request<Record<string, unknown>>("/api/status", {}, token),
+  status: (token: string) =>
+    request<{ crew_running: boolean; report_running: boolean; totals: Record<string, number> }>("/api/status", {}, token),
 
   events: (token: string) => request<{ events: Event[]; total: number }>("/api/events", {}, token),
 
@@ -66,6 +67,13 @@ export const api = {
     anchor.click();
     URL.revokeObjectURL(url);
   },
+
+  deleteReport: (token: string, reportId: string) =>
+    request<{ deleted: boolean; id: string }>(
+      `/api/reports/${reportId}`,
+      { method: "DELETE" },
+      token
+    ),
 
   chat: (token: string, payload: { message: string; history: Array<{ role: string; content: string }>; report_id?: string }) =>
     request<{ response: string }>(
