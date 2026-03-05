@@ -11,33 +11,47 @@ interface ReportsSidebarProps {
 
 export default function ReportsSidebar({ reports, activeReportId, onSelect, onDownload }: ReportsSidebarProps) {
   return (
-    <aside className="panel rounded-2xl p-4">
-      <h2 className="panel-title">Daily Reports</h2>
-      <div className="mt-4 max-h-[420px] space-y-2 overflow-y-auto pr-1">
+    <aside className="glass-card rounded-xl flex flex-col h-fit">
+      <div className="p-6 border-b border-white/10">
+        <h3 className="font-display text-sm font-bold tracking-widest text-slate-100">DAILY REPORTS</h3>
+      </div>
+      <div className="p-2 flex flex-col gap-2 max-h-[600px] overflow-y-auto">
         {reports.length === 0 ? (
-          <p className="text-sm text-slate-300/80">No reports yet.</p>
+          <p className="text-sm text-slate-500 py-8 text-center">No reports yet.</p>
         ) : (
-          reports.map((report) => (
-            <div
-              key={report.id}
-              className={`rounded-xl border p-3 ${
-                activeReportId === report.id
-                  ? "border-cyan bg-cyan/10 shadow-lg shadow-cyan/10"
-                  : "border-white/15 bg-white/5"
-              }`}
-            >
-              <button type="button" className="w-full text-left" onClick={() => onSelect(report.id)}>
-                <p className="font-medium">{report.report_date}</p>
-                <p className="text-xs text-slate-300/80">{report.file_name}</p>
-              </button>
-              <div className="mt-2 flex justify-between text-xs text-slate-300/80">
-                <span>{report.status}</span>
-                <button type="button" className="text-cyan hover:underline" onClick={() => onDownload(report.id)}>
-                  Download
+          reports.map((report) => {
+            const isActive = activeReportId === report.id;
+            return (
+              <div
+                key={report.id}
+                className={`p-4 rounded-lg cursor-pointer transition-all ${isActive
+                    ? "bg-primary/5 border border-primary shadow-[0_0_15px_rgba(26,213,255,0.1)]"
+                    : "hover:bg-white/5 border border-transparent"
+                  }`}
+                onClick={() => onSelect(report.id)}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <span className="text-[10px] font-bold text-slate-500">{report.report_date}</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${report.status === "ready"
+                      ? "bg-accent/20 text-accent"
+                      : "bg-white/10 text-slate-400"
+                    }`}>
+                    {report.status?.toUpperCase() || "PENDING"}
+                  </span>
+                </div>
+                <p className={`text-sm font-medium mb-3 ${isActive ? "text-slate-100" : "text-slate-400"}`}>
+                  {report.file_name}
+                </p>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onDownload(report.id); }}
+                  className="text-xs font-bold text-primary flex items-center gap-1 hover:text-accent transition-colors"
+                >
+                  ↓ DOWNLOAD
                 </button>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </aside>
