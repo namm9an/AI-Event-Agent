@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 import { api } from "@/lib/api";
 
@@ -18,6 +18,11 @@ export default function ChatPanel({ token, activeReportId }: ChatPanelProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -33,7 +38,7 @@ export default function ChatPanel({ token, activeReportId }: ChatPanelProps) {
       const response = await api.chat(token, {
         message: text,
         history: nextMessages,
-        report_id: activeReportId
+        report_id: activeReportId,
       });
       setMessages((prev) => [...prev, { role: "assistant", content: response.response }]);
     } catch {
@@ -44,36 +49,77 @@ export default function ChatPanel({ token, activeReportId }: ChatPanelProps) {
   }
 
   return (
-    <section className="panel rounded-2xl p-4">
-      <h2 className="panel-title">Q/A Console</h2>
-      <div className="mt-4 h-72 space-y-3 overflow-y-auto rounded-xl border border-white/10 bg-black/25 p-3">
+    <div className="glass-card rounded-xl flex flex-col h-[400px]">
+      <div className="p-6 border-b border-white/10 flex items-center gap-2">
+        <h3 className="font-display text-sm font-bold tracking-widest text-slate-100 uppercase">
+          Intelligence Q&amp;A
+        </h3>
+      </div>
+      <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-4 bg-black/30">
         {messages.length === 0 ? (
-          <p className="text-sm text-slate-300/80">Ask about events, speakers, topics, or selected report.</p>
+          <div className="flex flex-col gap-1 max-w-[80%]">
+            <div className="bg-white/5 border border-white/10 p-4 rounded-2xl rounded-tl-none">
+              <p className="text-sm text-slate-300">
+                Ready to analyze event intelligence. Ask about events, speakers, topics, or the selected report.
+              </p>
+            </div>
+            <span className="text-[9px] font-bold text-slate-500 ml-1 uppercase">AI Scout Assistant</span>
+          </div>
         ) : (
           messages.map((msg, i) => (
-            <div key={`${msg.role}-${i}`} className={msg.role === "user" ? "text-right" : "text-left"}>
-              <span
-                className={`inline-block max-w-[85%] rounded-xl px-3 py-2 text-sm ${
-                  msg.role === "user" ? "bg-cyan text-slate-900" : "bg-white/10 text-slate-100"
-                }`}
+            <div
+              key={`${msg.role}-${i}`}
+              className={`flex flex-col gap-1 max-w-[80%] ${msg.role === "user" ? "self-end" : ""}`}
+            >
+              <div
+                className={`p-4 rounded-2xl ${msg.role === "user"
+                    ? "bg-primary rounded-tr-none"
+                    : "bg-white/5 border border-white/10 rounded-tl-none"
+                  }`}
               >
-                {msg.content}
+                <p
+                  className={`text-sm ${msg.role === "user"
+                      ? "font-medium text-black"
+                      : "text-slate-300"
+                    }`}
+                >
+                  {msg.content}
+                </p>
+              </div>
+              <span
+                className={`text-[9px] font-bold text-slate-500 uppercase ${msg.role === "user" ? "mr-1 text-right" : "ml-1"
+                  }`}
+              >
+                {msg.role === "user" ? "YOU" : "AI Scout Assistant"}
               </span>
             </div>
           ))
         )}
+        {loading && (
+          <div className="flex flex-col gap-1 max-w-[80%]">
+            <div className="bg-white/5 border border-white/10 p-4 rounded-2xl rounded-tl-none">
+              <p className="text-sm text-slate-400">Analyzing...</p>
+            </div>
+          </div>
+        )}
+        <div ref={bottomRef} />
       </div>
-      <form className="mt-3 flex gap-2" onSubmit={onSubmit}>
+      <form className="p-4 border-t border-white/10 flex gap-3" onSubmit={onSubmit}>
         <input
-          className="input-shell w-full rounded-xl px-3 py-2 text-sm outline-none focus:border-cyan"
+          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-primary/50 text-slate-100 placeholder:text-slate-600"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask from selected report..."
+          placeholder="Ask intelligence query..."
+          disabled={loading}
         />
-        <button className="btn-primary rounded-xl px-4 py-2 text-sm font-semibold" disabled={loading}>
-          {loading ? "..." : "Send"}
+        <button
+          type="submit"
+          disabled={loading}
+          className="bg-primary text-black font-display font-bold text-xs tracking-widest px-6 py-2 rounded-lg hover:brightness-110 transition-all disabled:opacity-50"
+        >
+          SEND
         </button>
       </form>
-    </section>
+    </div>
   );
 }
