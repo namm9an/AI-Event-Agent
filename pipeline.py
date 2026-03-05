@@ -129,6 +129,11 @@ def _parse_events_json(raw_output: str) -> list[dict]:
     if not raw_output:
         return []
 
+    # Model outputs reasoning without opening <think> tag, then closes with </think>
+    # Split on </think> and take only the actual answer that follows
+    if "</think>" in raw_output:
+        raw_output = raw_output.split("</think>")[-1].strip()
+
     text = _strip_thinking_tags(raw_output)
     text = re.sub(r"```(?:json)?\s*", "", text)
     text = re.sub(r"```\s*$", "", text, flags=re.MULTILINE)
