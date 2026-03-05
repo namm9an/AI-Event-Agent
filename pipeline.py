@@ -17,13 +17,13 @@ Key improvements over crew.py:
 import json
 import re
 import uuid
-from datetime import datetime
+from datetime import datetime, date as _date, timedelta
 
 from sqlalchemy.orm import Session
 from rapidfuzz import fuzz
 
 from config import get_chat_llm, logger
-from scraper import run_scraping_pipeline
+from scraper import run_scraping_pipeline, search_linkedin_url
 from db.database import SessionLocal
 from db.models import Event, ScrapeRun, SearchQuery, Speaker
 
@@ -237,6 +237,12 @@ def _save_events(events_data: list[dict], db: Session) -> dict:
             stats["skipped"] += 1
             continue
 
+        # Skip events explicitly marked as Past
+        if str(event_data.get("status", "")).strip().lower() == "past":
+            logger.info("Skipping past event: %s", name)
+            stats["skipped"] += 1
+            continue
+
         if not url:
             slug = re.sub(r"[^a-z0-9-]", "-", name.lower())
             slug = re.sub(r"-+", "-", slug).strip("-")
@@ -418,6 +424,9 @@ def run_pipeline(queries: list[str] | None = None) -> dict:
 
         llm = get_chat_llm(temperature=0.1, max_tokens=8192)
 
+        today_str = _date.today().strftime("%B %d, %Y")
+        cutoff_str = (_date.today() - timedelta(days=20)).strftime("%B %d, %Y")
+
         # --- Step 2a: Batched Event Enrichment ---
         logger.info("Step 2a: Extracting events in batches of 5 pages...")
         event_items = list(event_content.items())
@@ -437,6 +446,8 @@ def run_pipeline(queries: list[str] | None = None) -> dict:
             enrich_prompt = (
                 "You are an event data extraction assistant. Extract ALL distinct AI, ML, Cloud, "
                 "and Data Science events from the scraped content below.\n\n"
+                f"Today's date is {today_str}. Only extract events that are upcoming or ended no earlier than {cutoff_str}. "
+                "Skip any event that ended more than 20 days ago.\n\n"
                 "For each event output a JSON object with these fields:\n"
                 "  name (string, required)\n"
                 "  description (string)\n"
@@ -519,6 +530,21 @@ def run_pipeline(queries: list[str] | None = None) -> dict:
             logger.warning("Speaker step returned no events — using enrichment output without speakers")
             events_with_speakers = [dict(e, speakers=[]) for e in events_with_meta]
         logger.info("Step 2b: %d events with speakers", len(events_with_speakers))
+
+        # --- Step 2b.5: LinkedIn URL Enrichment ---
+        logger.info("Step 2b.5: Enriching missing LinkedIn URLs...")
+        enriched_count = 0
+        for event in events_with_speakers:
+            for speaker in event.get("speakers", []):
+                if not speaker.get("linkedin_url") and speaker.get("name"):
+                    linkedin = search_linkedin_url(
+                        speaker["name"], speaker.get("company", "")
+                    )
+                    if linkedin:
+                        speaker["linkedin_url"] = linkedin
+                        enriched_count += 1
+                        logger.info("LinkedIn enriched: %s → %s", speaker["name"], linkedin)
+        logger.info("Step 2b.5: Enriched %d LinkedIn URLs", enriched_count)
 
         # --- Step 2c: Final Formatting & Validation ---
         logger.info("Step 2c: Formatting and deduplicating...")

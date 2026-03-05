@@ -148,6 +148,20 @@ def search_events(queries: Optional[list[str]] = None) -> list[dict]:
     return unique_results
 
 
+def search_linkedin_url(name: str, company: str = "") -> str:
+    """
+    Search DuckDuckGo for a speaker's LinkedIn profile URL.
+    Returns the first linkedin.com/in/ URL found, or empty string.
+    """
+    query = f'"{name}" {company} site:linkedin.com/in'.strip()
+    results = _ddgs_search(query, max_results=3)
+    for r in results:
+        url = r.get("href", "")
+        if "linkedin.com/in/" in url.lower():
+            return url
+    return ""
+
+
 # ============================================
 # Crawl4AI Scraping
 # ============================================
