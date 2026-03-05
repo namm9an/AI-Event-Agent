@@ -35,12 +35,8 @@ export default function DashboardPage() {
   }, [token]);
 
   function downloadReport(reportId: string) {
-    const url = api.downloadReportUrl(reportId);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.target = "_blank";
-    anchor.rel = "noreferrer";
-    anchor.click();
+    const report = reports.find((r) => r.id === reportId);
+    api.downloadReport(token, reportId, report?.file_name ?? `report-${reportId}.pdf`).catch(() => {});
   }
 
   return (
