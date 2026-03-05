@@ -52,20 +52,27 @@ def _build_report_text(events: list[Event], summary: dict) -> str:
         lines.append(f"   Location: {event.location}, {event.city}")
         lines.append(f"   Status: {event.status}")
         lines.append(f"   Event URL: {event.url}")
-        lines.append(f"   Topic links: {event.registration_url or 'N/A'}")
+        if event.registration_url:
+            lines.append(f"   Registration: {event.registration_url}")
         if event.speakers:
             lines.append("   Speakers:")
             for sp in event.speakers[:8]:
-                topic_links = ", ".join(sp.topic_links or []) if getattr(sp, "topic_links", None) else "N/A"
-                prev_talks = ", ".join(sp.previous_talks or []) if getattr(sp, "previous_talks", None) else "N/A"
                 lines.append(f"    - {sp.name} | {sp.designation} | {sp.company}")
-                lines.append(f"      Topic: {getattr(sp, 'topic_category', '') or sp.talk_title or 'N/A'}")
-                lines.append(f"      Topic links: {topic_links}")
+                topic = getattr(sp, 'topic_category', '') or sp.talk_title or ''
+                if topic:
+                    lines.append(f"      Topic: {topic}")
+                topic_links = [l for l in (sp.topic_links or []) if l]
+                if topic_links:
+                    lines.append(f"      Topic links: {', '.join(topic_links)}")
                 linkedin = getattr(sp, 'linkedin_url', '') or ''
                 wikipedia = getattr(sp, 'wikipedia_url', '') or ''
-                lines.append(f"      LinkedIn: [LINK]{linkedin}[/LINK]" if linkedin else "      LinkedIn: N/A")
-                lines.append(f"      Wikipedia: [LINK]{wikipedia}[/LINK]" if wikipedia else "      Wikipedia: N/A")
-                lines.append(f"      Previous talks: {prev_talks}")
+                if linkedin:
+                    lines.append(f"      LinkedIn: [LINK]{linkedin}[/LINK]")
+                if wikipedia:
+                    lines.append(f"      Wikipedia: [LINK]{wikipedia}[/LINK]")
+                prev_talks = [t for t in (sp.previous_talks or []) if t]
+                if prev_talks:
+                    lines.append(f"      Previous talks: {', '.join(prev_talks)}")
                 if sp.talk_summary:
                     lines.append(f"      Summary: {sp.talk_summary}")
         lines.append("")
