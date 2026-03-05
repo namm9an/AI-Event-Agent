@@ -321,6 +321,28 @@ def download_report(
     )
 
 
+@app.delete("/api/reports/{report_id}")
+def delete_report(
+    report_id: str,
+    db: Session = Depends(get_db),
+    _: AuthUser = Depends(get_current_user),
+):
+    report = db.query(Report).filter(Report.id == report_id).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+
+    # Remove PDF file from disk if it exists
+    try:
+        if report.file_path and os.path.exists(report.file_path):
+            os.remove(report.file_path)
+    except OSError as exc:
+        logger.warning("Could not delete report file %s: %s", report.file_path, exc)
+
+    db.delete(report)
+    db.commit()
+    return {"deleted": True, "id": report_id}
+
+
 @app.post("/api/chat", response_model=ChatResponse)
 def chat(
     request: ChatRequest,
