@@ -521,6 +521,33 @@ def admin_report_now(_: AuthUser = Depends(require_super_admin)):
     return {"started": True, "message": "Report generation started"}
 
 
+@app.post("/api/admin/enrich-linkedin")
+def admin_enrich_linkedin(
+    db: Session = Depends(get_db),
+    _: AuthUser = Depends(require_super_admin),
+):
+    """One-time enrichment: fill missing linkedin_url for all existing speakers."""
+    from scraper import search_linkedin_url
+
+    speakers = db.query(Speaker).filter(
+        (Speaker.linkedin_url == None) | (Speaker.linkedin_url == "")  # noqa: E711
+    ).all()
+
+    enriched = 0
+    for sp in speakers:
+        if not sp.name:
+            continue
+        url = search_linkedin_url(sp.name, sp.company or "")
+        if url:
+            sp.linkedin_url = url
+            enriched += 1
+            logger.info("LinkedIn enriched: %s → %s", sp.name, url)
+
+    db.commit()
+    logger.info("LinkedIn enrichment complete: %d/%d speakers enriched", enriched, len(speakers))
+    return {"enriched": enriched, "total_checked": len(speakers)}
+
+
 @app.post("/api/run-crew")
 def legacy_trigger(
     _: AuthUser = Depends(require_super_admin),

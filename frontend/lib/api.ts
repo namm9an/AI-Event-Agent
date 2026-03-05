@@ -145,6 +145,9 @@ export const api = {
       token
     ),
 
+  enrichLinkedin: (token: string) =>
+    request<{ enriched: number; total_checked: number }>("/api/admin/enrich-linkedin", { method: "POST" }, token),
+
   runNow: (token: string) => request<{ started: boolean }>("/api/admin/run-now", { method: "POST" }, token),
 
   generateReportNow: (token: string) =>

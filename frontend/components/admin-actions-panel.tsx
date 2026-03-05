@@ -58,6 +58,18 @@ export default function AdminActionsPanel({ token }: AdminActionsPanelProps) {
     }
   }
 
+  async function enrichLinkedin() {
+    setRunning("scrape");
+    try {
+      const result = await api.enrichLinkedin(token);
+      alert(`LinkedIn enrichment complete: ${result.enriched} of ${result.total_checked} speakers enriched.`);
+    } catch {
+      // silent
+    } finally {
+      setRunning(null);
+    }
+  }
+
   // Small spinner SVG
   const spinner = (
     <svg className="animate-spin" width="16" height="16" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -71,7 +83,7 @@ export default function AdminActionsPanel({ token }: AdminActionsPanelProps) {
       <div className="flex items-center gap-2 mb-6">
         <h3 className="text-xs font-bold tracking-[0.2em] uppercase text-slate-400">Manual Actions</h3>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <button
           type="button"
           onClick={runScrape}
@@ -87,6 +99,14 @@ export default function AdminActionsPanel({ token }: AdminActionsPanelProps) {
           className="flex items-center justify-center gap-3 h-16 border border-[#ff7d93]/40 text-[#ff7d93] font-bold rounded-lg hover:bg-[#ff7d93]/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-display uppercase tracking-widest text-sm"
         >
           {running === "report" ? <>{spinner} BUILDING REPORT...</> : "Generate Report Now"}
+        </button>
+        <button
+          type="button"
+          onClick={enrichLinkedin}
+          disabled={running !== null}
+          className="flex items-center justify-center gap-3 h-16 border border-accent/40 text-accent font-bold rounded-lg hover:bg-accent/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-display uppercase tracking-widest text-sm"
+        >
+          {running === "scrape" ? <>{spinner} ENRICHING...</> : "Enrich LinkedIn URLs"}
         </button>
       </div>
     </section>
