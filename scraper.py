@@ -36,11 +36,37 @@ SEARCH_QUERIES = [
     "upcoming AI events India",
     "machine learning meetup India 2025 2026",
     "cloud computing summit India 2025 2026",
-    "AI hackathon India 2025 2026",
     "data science conference Bangalore Mumbai Delhi 2025 2026",
-    "artificial intelligence workshop India upcoming",
     "GenAI generative AI event India 2025 2026",
 ]
+
+# ============================================
+# URL Quality Filter
+# ============================================
+
+_BLOCKED_TLDS = {
+    ".ru", ".store", ".vin", ".be", ".lt", ".vc", ".lv", ".ee",
+    ".by", ".kz", ".uz", ".am", ".ge", ".az", ".md", ".kg",
+}
+_BLOCKED_KEYWORDS = [
+    "mydesi", "viral-video", "mms", "sputnik", "yandex",
+    "datalopata", "sarkarivle", "tetespanas", "intiprahasia",
+    "lordfilmss", "sosyalbilgiler", "hacettepemun", "rosserial",
+    "pmlconf", "SkillFactory", "finam.ru",
+]
+_MAX_URLS = 20
+
+
+def _is_useful_url(url: str) -> bool:
+    """Return True if URL looks like a legitimate English event/tech page."""
+    url_lower = url.lower()
+    for tld in _BLOCKED_TLDS:
+        if tld in url_lower:
+            return False
+    for kw in _BLOCKED_KEYWORDS:
+        if kw.lower() in url_lower:
+            return False
+    return True
 
 
 def _ddgs_search(query: str, max_results: int = 10) -> list[dict]:
@@ -97,10 +123,14 @@ def search_events(queries: Optional[list[str]] = None) -> list[dict]:
     unique_results: list[dict] = []
 
     for query in queries:
+        if len(unique_results) >= _MAX_URLS:
+            break
         results = _ddgs_search(query)
         for r in results:
+            if len(unique_results) >= _MAX_URLS:
+                break
             url = r.get("href", "")
-            if url and url not in seen_urls:
+            if url and url not in seen_urls and _is_useful_url(url):
                 seen_urls.add(url)
                 unique_results.append({
                     "title": r.get("title", ""),
@@ -111,7 +141,10 @@ def search_events(queries: Optional[list[str]] = None) -> list[dict]:
         # Small delay between queries to avoid rate limiting
         time.sleep(1)
 
-    logger.info("Search phase complete: %d unique URLs from %d queries", len(unique_results), len(queries))
+    logger.info(
+        "Search phase complete: %d unique URLs (capped at %d, filtered) from %d queries",
+        len(unique_results), _MAX_URLS, len(queries),
+    )
     return unique_results
 
 
