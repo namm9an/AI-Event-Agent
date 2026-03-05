@@ -35,18 +35,26 @@ export default function SettingsPage() {
 
   return (
     <ProtectedShell requireRole="super_admin">
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+      <div className="bg-black min-h-screen text-slate-100">
         <TopBar />
-        <div className="space-y-5">
-          <section>
-            <p className="panel-title">Control Room</p>
-            <h2 className="heading-display mt-1 text-3xl">Super Admin Configuration</h2>
-          </section>
-          <AdminActionsPanel token={token} />
-          <AdminSchedulePanel token={token} schedule={schedule} onRefresh={refresh} />
-          <AdminQueryManager token={token} queries={queries} onRefresh={refresh} />
-        </div>
-      </main>
+
+        {/* Background Decoration */}
+        <div className="fixed top-0 right-0 -z-10 w-[500px] h-[500px] bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
+        <div className="fixed bottom-0 left-0 -z-10 w-[400px] h-[400px] bg-accent/5 blur-[100px] rounded-full pointer-events-none" />
+
+        <main className="pt-32 pb-20 max-w-6xl mx-auto px-6">
+          <header className="mb-12">
+            <p className="font-display text-primary text-xs font-bold tracking-[0.3em] uppercase mb-2">Control Room</p>
+            <h2 className="font-display text-5xl font-bold tracking-tighter uppercase text-slate-100">Super Admin Configuration</h2>
+          </header>
+
+          <div className="grid grid-cols-1 gap-8">
+            <AdminActionsPanel token={token} />
+            <AdminSchedulePanel token={token} schedule={schedule} onRefresh={refresh} />
+            <AdminQueryManager token={token} queries={queries} onRefresh={refresh} />
+          </div>
+        </main>
+      </div>
     </ProtectedShell>
   );
 }
