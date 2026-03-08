@@ -461,9 +461,11 @@ def run_pipeline(queries: list[str] | None = None) -> dict:
                 "  event_type (string: Conference | Meetup | Webinar | Hackathon | Summit)\n"
                 "  registration_url (string)\n\n"
                 "Rules:\n"
+                "- ONLY extract events held in India. Skip any event located outside India.\n"
+                "- If the event location/city is not in India, do NOT include it.\n"
                 "- Output ONLY a valid JSON array starting with [ and ending with ]. No markdown, no explanation, no reasoning.\n"
                 "- Use empty string for fields not found. Never invent data.\n"
-                "- Extract EVERY distinct event you can find.\n\n"
+                "- Extract EVERY distinct India-based event you can find.\n\n"
                 "SCRAPED CONTENT:\n\n"
                 f"{batch_text}"
             )
@@ -491,45 +493,67 @@ def run_pipeline(queries: list[str] | None = None) -> dict:
         if not events_with_meta:
             logger.warning("No events from enrichment step — pipeline will save 0 events")
 
-        # --- Step 2b: Speaker Extraction ---
-        logger.info("Step 2b: Extracting speakers...")
-        events_json_str = json.dumps(events_with_meta, indent=2)
-        speaker_prompt = (
-            "You are a speaker identification assistant. You have event data and speaker page content.\n\n"
-            "For each event in the JSON below, find speakers mentioned in the SPEAKER PAGE CONTENT "
-            "or in the original event data. Add a 'speakers' array to each event object.\n\n"
-            "Each speaker object must have:\n"
-            "  name (string, required)\n"
-            "  designation (string, job title)\n"
-            "  company (string)\n"
-            "  talk_title (string)\n"
-            "  talk_summary (string)\n"
-            "  topic_category (string, e.g. AI, ML, Cloud)\n"
-            "  topic_links (array of strings, URLs to papers/projects)\n"
-            "  linkedin_url (string)\n"
-            "  linkedin_bio (string)\n"
-            "  wikipedia_url (string)\n"
-            "  previous_talks (array of strings)\n\n"
-            "Rules:\n"
-            "- Max 5 speakers per event.\n"
-            "- If no speakers found, use empty array [].\n"
-            "- NEVER fabricate speaker names or details.\n"
-            "- Output ONLY the updated JSON array. No markdown, no explanation, no reasoning.\n\n"
-            f"CURRENT EVENT DATA:\n{events_json_str}\n\n"
-            f"SPEAKER PAGE CONTENT:\n{speaker_text}"
-        )
-        speaker_response = llm.invoke([
-            {"role": "system", "content": _NO_THINK_SYSTEM},
-            {"role": "user", "content": speaker_prompt},
-        ])
-        speaker_raw = speaker_response.content if hasattr(speaker_response, "content") else str(speaker_response)
-        logger.info("Speaker response: %d chars", len(speaker_raw))
+        # --- Step 2b: Batched Speaker Extraction ---
+        logger.info("Step 2b: Extracting speakers in batches of 5...")
+        events_with_speakers: list[dict] = []
+        speaker_batch_size = 5
 
-        events_with_speakers = _parse_events_json(speaker_raw)
-        if not events_with_speakers and events_with_meta:
-            logger.warning("Speaker step returned no events — using enrichment output without speakers")
-            events_with_speakers = [dict(e, speakers=[]) for e in events_with_meta]
-        logger.info("Step 2b: %d events with speakers", len(events_with_speakers))
+        for sp_batch_start in range(0, len(events_with_meta), speaker_batch_size):
+            sp_batch = events_with_meta[sp_batch_start:sp_batch_start + speaker_batch_size]
+            sp_batch_json = json.dumps(sp_batch, indent=2)
+
+            speaker_prompt = (
+                "You are a speaker identification assistant. You have event data and speaker page content.\n\n"
+                "For each event in the JSON below, find speakers mentioned in the SPEAKER PAGE CONTENT "
+                "or in the original event data. Add a 'speakers' array to each event object.\n\n"
+                "Each speaker object must have:\n"
+                "  name (string, required)\n"
+                "  designation (string, job title)\n"
+                "  company (string)\n"
+                "  talk_title (string)\n"
+                "  talk_summary (string)\n"
+                "  topic_category (string, REQUIRED — e.g. 'Generative AI', 'MLOps', 'Cloud Infrastructure', "
+                "'Computer Vision', 'NLP', 'Data Engineering'. Infer from talk_title, company, or context if not explicit)\n"
+                "  topic_links (array of strings, URLs to papers/projects)\n"
+                "  linkedin_url (string)\n"
+                "  linkedin_bio (string)\n"
+                "  wikipedia_url (string)\n"
+                "  previous_talks (array of strings)\n\n"
+                "Rules:\n"
+                "- Max 5 speakers per event.\n"
+                "- If no speakers found, use empty array [].\n"
+                "- NEVER fabricate speaker names or details.\n"
+                "- Only extract people who are CONFIRMED SPEAKERS, PANELISTS, or PRESENTERS at the event.\n"
+                "- Do NOT extract politicians, government officials, celebrities, or public figures who are merely "
+                "mentioned in event descriptions, news coverage, or inaugural ceremonies.\n"
+                "- A speaker must have an actual talk, panel session, or presentation role at the event.\n"
+                "- topic_category is REQUIRED for every speaker. Always classify their focus area.\n"
+                "- Output ONLY the updated JSON array. No markdown, no explanation, no reasoning.\n\n"
+                f"CURRENT EVENT DATA:\n{sp_batch_json}\n\n"
+                f"SPEAKER PAGE CONTENT:\n{speaker_text}"
+            )
+            speaker_response = llm.invoke([
+                {"role": "system", "content": _NO_THINK_SYSTEM},
+                {"role": "user", "content": speaker_prompt},
+            ])
+            speaker_raw = speaker_response.content if hasattr(speaker_response, "content") else str(speaker_response)
+            logger.info(
+                "Speaker batch %d-%d: %d chars response",
+                sp_batch_start, sp_batch_start + speaker_batch_size, len(speaker_raw)
+            )
+
+            batch_speakers = _parse_events_json(speaker_raw)
+            if not batch_speakers:
+                logger.warning(
+                    "Speaker batch %d-%d returned no events — using input without speakers",
+                    sp_batch_start, sp_batch_start + speaker_batch_size
+                )
+                batch_speakers = [dict(e, speakers=[]) for e in sp_batch]
+
+            events_with_speakers.extend(batch_speakers)
+
+        total_sp_batches = (len(events_with_meta) + speaker_batch_size - 1) // speaker_batch_size
+        logger.info("Step 2b: %d events with speakers from %d batches", len(events_with_speakers), total_sp_batches)
 
         # --- Step 2b.5: LinkedIn URL Enrichment ---
         logger.info("Step 2b.5: Enriching missing LinkedIn URLs...")
