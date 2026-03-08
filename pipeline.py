@@ -398,13 +398,14 @@ def run_pipeline(queries: list[str] | None = None) -> dict:
 
         event_content = scrape_result["event_content"]
         speaker_content = scrape_result["speaker_content"]
+        jsonld_events = scrape_result.get("jsonld_events", [])
 
-        if not event_content:
+        if not event_content and not jsonld_events:
             raise RuntimeError("No event pages were scraped — cannot proceed to extraction")
 
         logger.info(
-            "Phase 1 complete: %d event pages, %d speaker pages scraped",
-            len(event_content), len(speaker_content)
+            "Phase 1 complete: %d event pages, %d JSON-LD events, %d speaker pages",
+            len(event_content), len(jsonld_events), len(speaker_content)
         )
 
         scrape_run.urls_scraped = list(event_content.keys())
@@ -488,7 +489,20 @@ def run_pipeline(queries: list[str] | None = None) -> dict:
 
         events_with_meta = all_extracted_events
         total_batches = (len(event_items) + batch_size - 1) // batch_size
-        logger.info("Step 2a total: %d events from %d batches", len(events_with_meta), total_batches)
+        logger.info("Step 2a total: %d LLM-extracted events from %d batches", len(events_with_meta), total_batches)
+
+        # Merge JSON-LD pre-extracted events (these are high-confidence structured data)
+        # JSON-LD events come first — they are the most reliable source
+        if jsonld_events:
+            logger.info("Merging %d JSON-LD pre-extracted events", len(jsonld_events))
+            # Deduplicate by name against LLM events
+            llm_names = {e.get("name", "").lower().strip() for e in events_with_meta}
+            for je in jsonld_events:
+                jname = je.get("name", "").lower().strip()
+                if jname and jname not in llm_names:
+                    events_with_meta.append(je)
+                    llm_names.add(jname)
+            logger.info("After JSON-LD merge: %d total events", len(events_with_meta))
 
         if not events_with_meta:
             logger.warning("No events from enrichment step — pipeline will save 0 events")
