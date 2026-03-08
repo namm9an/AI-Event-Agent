@@ -100,52 +100,198 @@ def _contains_non_latin1(text: str) -> bool:
     return any(ord(ch) > 255 for ch in text)
 
 
-def _render_pdf(text: str, output_path: Path) -> None:
+def _render_pdf_structured(events: list, summary: dict, output_path: Path) -> None:
+    """Render a well-formatted PDF report using fpdf2 with proper layout."""
     unicode_font_path = _find_unicode_font()
 
     try:
         from fpdf import FPDF
 
         pdf = FPDF()
-        pdf.set_auto_page_break(auto=True, margin=15)
-        pdf.add_page()
-        if unicode_font_path:
-            pdf.add_font("Unicode", "", str(unicode_font_path))
-            pdf.set_font("Unicode", size=11)
-        else:
-            pdf.set_font("Helvetica", size=11)
-            if _contains_non_latin1(text):
-                raise RuntimeError(
-                    "Unicode font not found for fpdf2; falling back to PyMuPDF renderer"
-                )
+        pdf.set_auto_page_break(auto=True, margin=20)
 
-        for line in text.splitlines():
-            m = _LINK_RE.match(line.strip())
-            if m:
-                url = m.group(1)
-                pdf.set_text_color(26, 211, 255)  # cyan for clickable links
-                pdf.cell(0, 6, url, link=url, new_x="LMARGIN", new_y="NEXT")
-                pdf.set_text_color(0, 0, 0)
+        # Register fonts
+        has_unicode = bool(unicode_font_path)
+
+        _registered_styles: set[str] = set()
+
+        def set_font(style: str = "", size: int = 11):
+            if has_unicode:
+                if style not in _registered_styles:
+                    pdf.add_font("Unicode", style, str(unicode_font_path))
+                    _registered_styles.add(style)
+                pdf.set_font("Unicode", style=style, size=size)
             else:
-                pdf.multi_cell(0, 6, line)
+                pdf.set_font("Helvetica", style=style, size=size)
+
+        def add_link(url: str, label: str = ""):
+            pdf.set_text_color(26, 130, 255)
+            pdf.cell(0, 6, label or url, link=url, new_x="LMARGIN", new_y="NEXT")
+            pdf.set_text_color(0, 0, 0)
+
+        def hr():
+            pdf.set_draw_color(200, 200, 200)
+            y = pdf.get_y()
+            pdf.line(10, y, 200, y)
+            pdf.ln(4)
+
+        # --- Title Page / Header ---
+        pdf.add_page()
+        set_font("B", 22)
+        pdf.set_text_color(30, 60, 120)
+        pdf.cell(0, 14, "AI Event Agent", new_x="LMARGIN", new_y="NEXT", align="C")
+        set_font("B", 14)
+        pdf.set_text_color(80, 80, 80)
+        pdf.cell(0, 10, "Daily Intelligence Report", new_x="LMARGIN", new_y="NEXT", align="C")
+        pdf.set_text_color(0, 0, 0)
+        pdf.ln(4)
+        hr()
+
+        # --- Summary Section ---
+        set_font("B", 12)
+        pdf.cell(0, 8, "Report Summary", new_x="LMARGIN", new_y="NEXT")
+        set_font("", 10)
+        pdf.cell(0, 6, f"Generated: {summary.get('generated_at', 'N/A')} UTC", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(0, 6, f"Total Events: {summary.get('events', 0)}", new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(0, 6, f"Total Speakers: {summary.get('speakers', 0)}", new_x="LMARGIN", new_y="NEXT")
+        pdf.ln(4)
+        hr()
+
+        # --- Events ---
+        for idx, event in enumerate(events, start=1):
+            # Event header
+            set_font("B", 12)
+            pdf.set_fill_color(240, 245, 255)
+            event_title = f"{idx}. {event.name}"
+            pdf.multi_cell(0, 8, event_title, fill=True)
+            pdf.ln(2)
+
+            # Event details table
+            set_font("", 10)
+            details = [
+                ("Date", event.date_text or "TBA"),
+                ("Location", f"{event.location or ''}, {event.city or ''}".strip(", ")),
+                ("Status", event.status or "Unknown"),
+                ("Type", getattr(event, 'event_type', '') or ""),
+            ]
+            for label, value in details:
+                if value:
+                    set_font("B", 10)
+                    pdf.cell(30, 6, f"{label}:")
+                    set_font("", 10)
+                    pdf.cell(0, 6, value, new_x="LMARGIN", new_y="NEXT")
+
+            # URLs
+            if event.url:
+                set_font("B", 10)
+                pdf.cell(30, 6, "Event URL:")
+                add_link(event.url)
+            if event.registration_url:
+                set_font("B", 10)
+                pdf.cell(30, 6, "Register:")
+                add_link(event.registration_url)
+
+            # Speakers
+            if event.speakers:
+                pdf.ln(2)
+                set_font("B", 11)
+                pdf.set_text_color(30, 60, 120)
+                pdf.cell(0, 7, f"Speakers ({len(event.speakers)})", new_x="LMARGIN", new_y="NEXT")
+                pdf.set_text_color(0, 0, 0)
+
+                # Speaker table header
+                set_font("B", 9)
+                pdf.set_fill_color(60, 90, 150)
+                pdf.set_text_color(255, 255, 255)
+                col_widths = [45, 35, 35, 40, 35]
+                headers = ["Name", "Designation", "Company", "Topic", "Talk Title"]
+                for i, h in enumerate(headers):
+                    pdf.cell(col_widths[i], 7, h, border=1, fill=True)
+                pdf.ln()
+                pdf.set_text_color(0, 0, 0)
+
+                # Speaker rows
+                set_font("", 8)
+                for sp_idx, sp in enumerate(event.speakers[:8]):
+                    if sp_idx % 2 == 0:
+                        pdf.set_fill_color(248, 248, 255)
+                    else:
+                        pdf.set_fill_color(255, 255, 255)
+
+                    topic = getattr(sp, 'topic_category', '') or ''
+                    cells = [
+                        sp.name or "",
+                        (sp.designation or "")[:25],
+                        (sp.company or "")[:25],
+                        topic[:30],
+                        (sp.talk_title or "")[:30],
+                    ]
+                    for i, cell_text in enumerate(cells):
+                        pdf.cell(col_widths[i], 6, cell_text, border=1, fill=True)
+                    pdf.ln()
+
+                # Speaker details (LinkedIn, summary, etc.)
+                for sp in event.speakers[:8]:
+                    linkedin = getattr(sp, 'linkedin_url', '') or ''
+                    wikipedia = getattr(sp, 'wikipedia_url', '') or ''
+                    if linkedin or wikipedia or sp.talk_summary:
+                        set_font("", 8)
+                        pdf.set_text_color(100, 100, 100)
+                        if sp.talk_summary:
+                            pdf.multi_cell(0, 5, f"  {sp.name}: {sp.talk_summary[:150]}")
+                        if linkedin:
+                            pdf.cell(20, 5, f"  LinkedIn: ")
+                            add_link(linkedin, linkedin[:60])
+                        if wikipedia:
+                            pdf.cell(20, 5, f"  Wikipedia: ")
+                            add_link(wikipedia, wikipedia[:60])
+                        pdf.set_text_color(0, 0, 0)
+
+            pdf.ln(3)
+            hr()
+
         pdf.output(str(output_path))
         return
-    except Exception as exc:
-        logger.warning("FPDF rendering failed (%s). Trying PyMuPDF fallback.", exc)
 
+    except Exception as exc:
+        logger.warning("Structured PDF rendering failed (%s). Trying fallback.", exc)
+
+    # Fallback: plain text rendering
+    _render_pdf_fallback(events, summary, output_path)
+
+
+def _render_pdf_fallback(events: list, summary: dict, output_path: Path) -> None:
+    """Simple fallback PDF renderer using PyMuPDF."""
     try:
         import fitz
-
         doc = fitz.open()
         page = doc.new_page()
         y = 72
-        for line in text.splitlines():
-            if y > 800:
+
+        def write_line(text: str, fontsize: int = 10):
+            nonlocal page, y
+            if y > 780:
                 page = doc.new_page()
                 y = 72
-            clean_line = _re.sub(r'\[/?LINK\]', '', line)
-            page.insert_text((50, y), clean_line[:120], fontsize=10)
-            y += 14
+            clean = _re.sub(r'\[/?LINK\]', '', text)
+            page.insert_text((50, y), clean[:120], fontsize=fontsize)
+            y += fontsize + 4
+
+        write_line("AI Event Agent — Daily Report", 16)
+        write_line(f"Generated: {summary.get('generated_at', '')} UTC", 10)
+        write_line(f"Events: {summary.get('events', 0)} | Speakers: {summary.get('speakers', 0)}", 10)
+        y += 10
+
+        for idx, event in enumerate(events, start=1):
+            write_line(f"{idx}. {event.name}", 12)
+            write_line(f"   Date: {event.date_text} | Location: {event.location}, {event.city}")
+            write_line(f"   Status: {event.status}")
+            if event.speakers:
+                for sp in event.speakers[:5]:
+                    topic = getattr(sp, 'topic_category', '') or ''
+                    write_line(f"   - {sp.name} | {sp.designation} | {sp.company} | {topic}")
+            y += 6
+
         doc.save(str(output_path))
         doc.close()
     except Exception as exc:
@@ -178,7 +324,7 @@ def generate_daily_report(db: Session, report_date: date | None = None) -> Repor
 
     events, summary = _collect_report_data(db)
     raw_text = _build_report_text(events, summary)
-    _render_pdf(raw_text, file_path)
+    _render_pdf_structured(events, summary, file_path)
 
     existing.file_name = file_name
     existing.file_path = str(file_path)
