@@ -444,8 +444,8 @@ def run_pipeline(queries: list[str] | None = None) -> dict:
                 batch_text = batch_text[:max_batch_chars] + "\n\n[... content truncated ...]"
 
             enrich_prompt = (
-                "You are an event data extraction assistant. Extract ALL distinct AI, ML, Cloud, "
-                "and Data Science events from the scraped content below.\n\n"
+                "You are an event data extraction assistant. Extract ONLY AI, ML, Cloud, "
+                "and Data Science events that are located in INDIA from the scraped content below.\n\n"
                 f"Today's date is {today_str}. Only extract events that are upcoming or ended no earlier than {cutoff_str}. "
                 "Skip any event that ended more than 20 days ago.\n\n"
                 "For each event output a JSON object with these fields:\n"
@@ -453,7 +453,7 @@ def run_pipeline(queries: list[str] | None = None) -> dict:
                 "  description (string)\n"
                 "  date_text (string, raw date as found on page)\n"
                 "  location (string, full venue address)\n"
-                "  city (string, e.g. Bangalore, Mumbai, Delhi)\n"
+                "  city (string, Indian city e.g. Bangalore, Mumbai, Delhi, Hyderabad, Chennai, Pune)\n"
                 "  status (string: Upcoming | Live | Past | Unknown)\n"
                 "  category (array of strings: AI, ML, Cloud, Data Science, etc.)\n"
                 "  url (string, from the === PAGE: URL === header above the content)\n"
