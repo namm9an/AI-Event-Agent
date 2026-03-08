@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
 
 import { api } from "@/lib/api";
 
@@ -77,14 +78,23 @@ export default function ChatPanel({ token, activeReportId }: ChatPanelProps) {
                     : "bg-white/5 border border-white/10 rounded-tl-none"
                   }`}
               >
-                <p
-                  className={`text-sm ${msg.role === "user"
-                      ? "font-medium text-black"
-                      : "text-slate-300"
-                    }`}
-                >
-                  {msg.content}
-                </p>
+                {msg.role === "user" ? (
+                  <p className="text-sm font-medium text-black">{msg.content}</p>
+                ) : (
+                  <div className="text-sm text-slate-300 space-y-1">
+                    <ReactMarkdown
+                      components={{
+                        p: ({ children }) => <span className="block">{children}</span>,
+                        strong: ({ children }) => <strong className="font-bold text-slate-100">{children}</strong>,
+                        ul: ({ children }) => <ul className="list-disc list-inside mt-1 space-y-1">{children}</ul>,
+                        li: ({ children }) => <li>{children}</li>,
+                        a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">{children}</a>,
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
+                )}
               </div>
               <span
                 className={`text-[9px] font-bold text-slate-500 uppercase ${msg.role === "user" ? "mr-1 text-right" : "ml-1"

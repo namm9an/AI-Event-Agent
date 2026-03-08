@@ -1,12 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import { clearSession, getRole } from "@/lib/session";
 
 export default function TopBar() {
-  const router = useRouter();
   const role = getRole();
 
   return (
@@ -36,7 +34,7 @@ export default function TopBar() {
         </div>
         <button
           type="button"
-          onClick={() => { clearSession(); router.push("/login"); }}
+          onClick={() => { clearSession(); window.location.href = "/login"; }}
           className="font-display text-sm font-bold tracking-widest px-6 py-2 border border-[#ff7d93]/40 text-[#ff7d93] rounded-lg hover:bg-[#ff7d93]/10 transition-all"
         >
           LOGOUT

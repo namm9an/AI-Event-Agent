@@ -58,6 +58,20 @@ export default function AdminActionsPanel({ token }: AdminActionsPanelProps) {
     }
   }
 
+  async function clearAllEvents() {
+    if (!confirm("This will permanently delete ALL events and speakers from the database. Are you sure?")) return;
+    setRunning("scrape");
+    try {
+      const result = await api.clearAllEvents(token);
+      alert(`Cleared ${result.deleted_events} events and ${result.deleted_speakers} speakers.`);
+      router.refresh();
+    } catch {
+      alert("Failed to clear events. Check your connection.");
+    } finally {
+      setRunning(null);
+    }
+  }
+
   async function enrichLinkedin() {
     setRunning("scrape");
     try {
@@ -83,7 +97,7 @@ export default function AdminActionsPanel({ token }: AdminActionsPanelProps) {
       <div className="flex items-center gap-2 mb-6">
         <h3 className="text-xs font-bold tracking-[0.2em] uppercase text-slate-400">Manual Actions</h3>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <button
           type="button"
           onClick={runScrape}
@@ -107,6 +121,14 @@ export default function AdminActionsPanel({ token }: AdminActionsPanelProps) {
           className="flex items-center justify-center gap-3 h-16 border border-accent/40 text-accent font-bold rounded-lg hover:bg-accent/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-display uppercase tracking-widest text-sm"
         >
           {running === "scrape" ? <>{spinner} ENRICHING...</> : "Enrich LinkedIn URLs"}
+        </button>
+        <button
+          type="button"
+          onClick={clearAllEvents}
+          disabled={running !== null}
+          className="flex items-center justify-center gap-3 h-16 border border-red-500/40 text-red-400 font-bold rounded-lg hover:bg-red-500/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-display uppercase tracking-widest text-sm"
+        >
+          {running === "scrape" ? <>{spinner} CLEARING...</> : "Clear All Events"}
         </button>
       </div>
     </section>

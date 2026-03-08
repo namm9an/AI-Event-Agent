@@ -151,5 +151,8 @@ export const api = {
   runNow: (token: string) => request<{ started: boolean }>("/api/admin/run-now", { method: "POST" }, token),
 
   generateReportNow: (token: string) =>
-    request<{ started: boolean }>("/api/admin/reports/generate-now", { method: "POST" }, token)
+    request<{ started: boolean }>("/api/admin/reports/generate-now", { method: "POST" }, token),
+
+  clearAllEvents: (token: string) =>
+    request<{ deleted_events: number; deleted_speakers: number }>("/api/admin/events", { method: "DELETE" }, token),
 };
