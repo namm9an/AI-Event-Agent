@@ -1,6 +1,7 @@
 """AI Event Agent — FastAPI API server."""
 
 import os
+import re
 import threading
 import uuid
 from contextlib import asynccontextmanager
@@ -411,7 +412,13 @@ def chat(
     try:
         llm = get_chat_llm()
         response = llm.invoke(messages)
-        return ChatResponse(response=response.content)
+        raw = response.content
+        # Strip <think>...</think> reasoning traces from Nemotron/DeepSeek-style models
+        raw = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL | re.IGNORECASE)
+        raw = re.sub(r"<thinking>.*?</thinking>", "", raw, flags=re.DOTALL | re.IGNORECASE)
+        raw = re.sub(r"</?think[^>]*>", "", raw, flags=re.IGNORECASE)
+        raw = re.sub(r"</?thinking[^>]*>", "", raw, flags=re.IGNORECASE)
+        return ChatResponse(response=raw.strip())
     except Exception as exc:
         logger.error("Chat LLM call failed: %s", exc)
         return ChatResponse(response="I am unable to answer right now. Please try again.")
@@ -546,6 +553,21 @@ def admin_enrich_linkedin(
     db.commit()
     logger.info("LinkedIn enrichment complete: %d/%d speakers enriched", enriched, len(speakers))
     return {"enriched": enriched, "total_checked": len(speakers)}
+
+
+@app.delete("/api/admin/events")
+def admin_clear_events(
+    db: Session = Depends(get_db),
+    _: AuthUser = Depends(require_super_admin),
+):
+    """Delete ALL events and speakers from the database."""
+    speaker_count = db.query(Speaker).count()
+    event_count = db.query(Event).count()
+    db.query(Speaker).delete()
+    db.query(Event).delete()
+    db.commit()
+    logger.info("Cleared %d events and %d speakers", event_count, speaker_count)
+    return {"deleted_events": event_count, "deleted_speakers": speaker_count}
 
 
 @app.post("/api/run-crew")
