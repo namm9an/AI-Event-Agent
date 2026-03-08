@@ -16,7 +16,9 @@ import asyncio
 import re
 import time
 from typing import Optional
+from urllib.parse import urlencode
 
+import httpx
 from crawl4ai import AsyncWebCrawler
 from ddgs import DDGS
 from rapidfuzz import fuzz
@@ -26,6 +28,7 @@ from config import (
     DDGS_RETRY_COUNT,
     DDGS_BASE_DELAY,
     MAX_TOKENS_PER_PAGE,
+    SEARXNG_URL,
 )
 
 
@@ -71,16 +74,70 @@ def _is_useful_url(url: str) -> bool:
     return True
 
 
+# ============================================
+# SearXNG Search (preferred)
+# ============================================
+
+def _searxng_search(query: str, max_results: int = 10) -> list[dict]:
+    """
+    Run a search via SearXNG JSON API.
+
+    Returns:
+        List of {title, href, body} dicts (same shape as DDGS).
+    """
+    if not SEARXNG_URL:
+        return []
+
+    params = {
+        "q": query,
+        "format": "json",
+        "language": "en-IN",
+        "pageno": 1,
+    }
+    url = f"{SEARXNG_URL}/search?{urlencode(params)}"
+
+    for attempt in range(DDGS_RETRY_COUNT):
+        try:
+            logger.info("SearXNG search (attempt %d): '%s'", attempt + 1, query)
+            resp = httpx.get(url, timeout=15)
+            resp.raise_for_status()
+            data = resp.json()
+
+            results = []
+            for r in data.get("results", [])[:max_results]:
+                results.append({
+                    "title": r.get("title", ""),
+                    "href": r.get("url", ""),
+                    "body": r.get("content", ""),
+                })
+
+            if results:
+                logger.info("SearXNG returned %d results for '%s'", len(results), query)
+                return results
+            else:
+                logger.warning("SearXNG: no results for '%s'", query)
+                return []
+
+        except Exception as e:
+            delay = DDGS_BASE_DELAY * (2 ** attempt)
+            logger.warning(
+                "SearXNG search failed (attempt %d/%d): %s. Retrying in %ds...",
+                attempt + 1, DDGS_RETRY_COUNT, str(e), delay
+            )
+            if attempt < DDGS_RETRY_COUNT - 1:
+                time.sleep(delay)
+
+    logger.error("SearXNG search failed after %d attempts for '%s'", DDGS_RETRY_COUNT, query)
+    return []
+
+
+# ============================================
+# DuckDuckGo Search (fallback)
+# ============================================
+
 def _ddgs_search(query: str, max_results: int = 10) -> list[dict]:
     """
     Run a single DuckDuckGo search with exponential backoff.
-
-    Args:
-        query: Search query string.
-        max_results: Max results per query.
-
-    Returns:
-        List of {title, href, body} dicts.
     """
     for attempt in range(DDGS_RETRY_COUNT):
         try:
@@ -108,6 +165,16 @@ def _ddgs_search(query: str, max_results: int = 10) -> list[dict]:
     return []
 
 
+def _search(query: str, max_results: int = 10) -> list[dict]:
+    """Search using SearXNG if available, otherwise fall back to DuckDuckGo."""
+    if SEARXNG_URL:
+        results = _searxng_search(query, max_results)
+        if results:
+            return results
+        logger.warning("SearXNG returned nothing, falling back to DuckDuckGo for '%s'", query)
+    return _ddgs_search(query, max_results)
+
+
 def search_events(queries: Optional[list[str]] = None) -> list[dict]:
     """
     Search DuckDuckGo with multiple queries and collect unique event URLs.
@@ -127,7 +194,7 @@ def search_events(queries: Optional[list[str]] = None) -> list[dict]:
     for query in queries:
         if len(unique_results) >= _MAX_URLS:
             break
-        results = _ddgs_search(query)
+        results = _search(query)
         for r in results:
             if len(unique_results) >= _MAX_URLS:
                 break
@@ -173,7 +240,7 @@ def search_linkedin_url(name: str, company: str = "") -> str:
     or empty string if no good match is found.
     """
     query = f'"{name}" {company} site:linkedin.com/in'.strip()
-    results = _ddgs_search(query, max_results=5)
+    results = _search(query, max_results=5)
 
     name_lower = name.lower().strip()
     best_url = ""
@@ -293,7 +360,7 @@ def search_speaker_pages(event_names: list[str]) -> dict[str, str]:
 
     for name in event_names:
         query = f"{name} speakers"
-        results = _ddgs_search(query, max_results=3)
+        results = _search(query, max_results=3)
 
         for r in results:
             url = r.get("href", "")

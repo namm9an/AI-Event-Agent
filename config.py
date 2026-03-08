@@ -100,3 +100,8 @@ DDGS_RETRY_COUNT = int(os.getenv("DDGS_RETRY_COUNT", "3"))
 DDGS_BASE_DELAY = int(os.getenv("DDGS_BASE_DELAY", "2"))
 MAX_SPEAKERS_PER_EVENT = int(os.getenv("MAX_SPEAKERS_PER_EVENT", "5"))
 SPEAKER_SEARCH_TIMEOUT = int(os.getenv("SPEAKER_SEARCH_TIMEOUT", "10"))
+
+# SearXNG — self-hosted meta-search engine (preferred over DuckDuckGo)
+# Set to your SearXNG instance URL, e.g. "http://localhost:8080"
+# Leave empty to fall back to DuckDuckGo
+SEARXNG_URL = os.getenv("SEARXNG_URL", "")
