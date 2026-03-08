@@ -13,11 +13,13 @@ Functions:
 """
 
 import asyncio
+import re
 import time
 from typing import Optional
 
 from crawl4ai import AsyncWebCrawler
 from ddgs import DDGS
+from rapidfuzz import fuzz
 
 from config import (
     logger,
@@ -148,17 +150,53 @@ def search_events(queries: Optional[list[str]] = None) -> list[dict]:
     return unique_results
 
 
+def _extract_name_from_linkedin_slug(url: str) -> str:
+    """Extract a human-readable name from a LinkedIn URL slug.
+
+    E.g. 'https://linkedin.com/in/rakesh-sharma-123abc' -> 'rakesh sharma'
+    """
+    match = re.search(r'linkedin\.com/in/([^/?#]+)', url, re.IGNORECASE)
+    if not match:
+        return ""
+    slug = match.group(1)
+    # Remove trailing hash/id segments (digits at the end)
+    slug = re.sub(r'-[0-9a-f]{5,}$', '', slug)
+    slug = re.sub(r'-\d+$', '', slug)
+    # Replace hyphens with spaces
+    return slug.replace('-', ' ').strip().lower()
+
+
 def search_linkedin_url(name: str, company: str = "") -> str:
     """
     Search DuckDuckGo for a speaker's LinkedIn profile URL.
-    Returns the first linkedin.com/in/ URL found, or empty string.
+    Returns the first linkedin.com/in/ URL that fuzzy-matches the speaker name,
+    or empty string if no good match is found.
     """
     query = f'"{name}" {company} site:linkedin.com/in'.strip()
-    results = _ddgs_search(query, max_results=3)
+    results = _ddgs_search(query, max_results=5)
+
+    name_lower = name.lower().strip()
+    best_url = ""
+    best_score = 0
+
     for r in results:
         url = r.get("href", "")
-        if "linkedin.com/in/" in url.lower():
-            return url
+        if "linkedin.com/in/" not in url.lower():
+            continue
+        slug_name = _extract_name_from_linkedin_slug(url)
+        if not slug_name:
+            continue
+        score = fuzz.token_sort_ratio(name_lower, slug_name)
+        logger.debug("LinkedIn match: '%s' vs slug '%s' → score %d", name, slug_name, score)
+        if score > best_score:
+            best_score = score
+            best_url = url
+
+    if best_score >= 70:
+        logger.info("LinkedIn match accepted: '%s' → %s (score %d)", name, best_url, best_score)
+        return best_url
+    elif best_url:
+        logger.warning("LinkedIn match rejected: '%s' → %s (score %d < 70)", name, best_url, best_score)
     return ""
 
 
