@@ -346,6 +346,19 @@ def _save_events(events_data: list[dict], db: Session) -> dict:
     return stats
 
 
+def _expire_old_events(db: Session, days: int = 30) -> int:
+    """Delete events that have not been refreshed within the retention window."""
+    cutoff = datetime.utcnow() - timedelta(days=days)
+    old_events = db.query(Event).filter(Event.last_scraped_at < cutoff).all()
+
+    for event in old_events:
+        db.delete(event)
+
+    db.commit()
+    logger.info("Auto-expired %d events older than %d days", len(old_events), days)
+    return len(old_events)
+
+
 def _load_active_queries(db: Session) -> list[str]:
     """Get active admin-managed queries ordered by priority."""
     rows = (
@@ -626,6 +639,7 @@ def run_pipeline(queries: list[str] | None = None) -> dict:
                 i, evt.get("name", "MISSING"), evt.get("url", "MISSING")
             )
 
+        _expire_old_events(db, days=30)
         stats = _save_events(events_data, db)
 
         scrape_run.status = "completed"
